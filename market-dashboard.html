@@ -1,0 +1,2107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>全球宏观市场仪表盘</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0c0f;
+  --bg2: #111318;
+  --bg3: #181c23;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.13);
+  --text: #e8eaf0;
+  --text2: #7a8090;
+  --text3: #4a5060;
+  --green: #00c896;
+  --green-dim: rgba(0,200,150,0.12);
+  --red: #ff4d6a;
+  --red-dim: rgba(255,77,106,0.12);
+  --amber: #f5a623;
+  --amber-dim: rgba(245,166,35,0.12);
+  --blue: #4d9fff;
+  --blue-dim: rgba(77,159,255,0.10);
+  --purple: #9b7fff;
+  --fill1: rgba(255,255,255,0.04);
+  --fill2: rgba(255,255,255,0.05);
+  --fill3: rgba(255,255,255,0.06);
+  --fill4: rgba(255,255,255,0.25);
+  --tip-bg: #1e222b;
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'Noto Sans SC', sans-serif;
+}
+:root[data-theme="light"] {
+  --bg: #f5f6f8;
+  --bg2: #ffffff;
+  --bg3: #eef0f3;
+  --border: rgba(0,0,0,0.08);
+  --border2: rgba(0,0,0,0.14);
+  --text: #1a1d24;
+  --text2: #5a6070;
+  --text3: #8a90a0;
+  --green: #00a87a;
+  --green-dim: rgba(0,168,122,0.10);
+  --red: #e03e56;
+  --red-dim: rgba(224,62,86,0.10);
+  --amber: #d48a10;
+  --amber-dim: rgba(212,138,16,0.10);
+  --blue: #3078d4;
+  --blue-dim: rgba(48,120,212,0.10);
+  --purple: #7a5fe0;
+  --fill1: rgba(0,0,0,0.03);
+  --fill2: rgba(0,0,0,0.04);
+  --fill3: rgba(0,0,0,0.06);
+  --fill4: rgba(0,0,0,0.18);
+  --tip-bg: #ffffff;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; }
+body { min-height: 100vh; }
+
+.header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 28px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.logo { font-family: var(--mono); font-size: 12px; color: var(--text2); letter-spacing: 0.1em; }
+.logo em { color: var(--green); font-style: normal; }
+.header-title { font-size: 15px; font-weight: 500; margin-left: 14px; }
+.header-left { display: flex; align-items: baseline; }
+.header-right { display: flex; align-items: center; gap: 14px; }
+.update-time { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+.refresh-btn {
+  background: none; border: 1px solid var(--border2); color: var(--text2);
+  font-family: var(--mono); font-size: 11px; padding: 5px 14px;
+  border-radius: 3px; cursor: pointer; letter-spacing: 0.05em; transition: all 0.2s;
+}
+.refresh-btn:hover { border-color: var(--green); color: var(--green); }
+.refresh-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.theme-btn {
+  background: none; border: 1px solid var(--border2); color: var(--text2);
+  font-size: 14px; padding: 3px 8px; border-radius: 3px;
+  cursor: pointer; transition: all 0.2s; line-height: 1;
+}
+.theme-btn:hover { border-color: var(--amber); color: var(--amber); }
+
+.tabs {
+  display: flex; padding: 0 28px;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto; gap: 0;
+}
+.tab {
+  padding: 11px 18px; font-size: 12px; color: var(--text3);
+  border: none; border-bottom: 2px solid transparent;
+  background: none; cursor: pointer; white-space: nowrap;
+  transition: all 0.18s; letter-spacing: 0.04em;
+}
+.tab:hover { color: var(--text2); }
+.tab.active { color: var(--text); border-bottom-color: var(--green); }
+.tab-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 7px; vertical-align: middle; }
+
+.main { padding: 18px 28px 48px; }
+
+.summary-bar {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 10px 16px; background: var(--bg2);
+  border: 1px solid var(--border); border-radius: 5px; margin-bottom: 18px;
+}
+.summary-label { font-size: 11px; color: var(--text3); margin-right: 2px; letter-spacing: 0.04em; }
+.summary-pill {
+  display: flex; align-items: center; gap: 5px;
+  font-family: var(--mono); font-size: 11px;
+  padding: 3px 10px; border-radius: 3px;
+  background: var(--fill1); border: 1px solid var(--border);
+}
+.summary-pill .dot { width: 5px; height: 5px; border-radius: 50%; }
+
+.cross-signal-bar {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 8px 16px; margin-bottom: 18px;
+  border: 1px solid var(--border); border-radius: 5px;
+  background: var(--bg2); min-height: 34px;
+}
+#cross-signal { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.cross-empty { font-size: 11px; color: var(--text3); font-family: var(--mono); }
+.cross-alert {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 12px; border-radius: 4px;
+  border: 1px solid; font-size: 11px;
+}
+.cross-icon { font-size: 12px; font-weight: 700; }
+.cross-label { font-weight: 600; letter-spacing: 0.02em; }
+.cross-desc { color: var(--text3); font-size: 10px; }
+.cross-rules-tip {
+  bottom: auto !important; top: calc(100% + 8px); width: 320px;
+}
+.cross-rules-tip::after {
+  top: auto !important; bottom: 100%; border-top-color: transparent !important;
+  border-bottom-color: var(--tip-bg);
+}
+
+.layer-section { display: none; }
+.layer-section.active { display: block; }
+
+.section-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px; }
+.section-title { font-size: 12px; font-weight: 500; color: var(--text2); letter-spacing: 0.08em; text-transform: uppercase; }
+.section-desc { font-size: 12px; color: var(--text3); }
+
+.indicator-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 10px;
+}
+
+.icard {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 15px 16px;
+  transition: border-color 0.18s, background 0.18s;
+}
+.icard:hover { border-color: var(--border2); background: var(--bg3); }
+
+.icard-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.icard-name-wrap { display: flex; align-items: center; gap: 6px; }
+.icard-name { font-size: 12px; color: var(--text2); letter-spacing: 0.03em; }
+.icard-tag { font-family: var(--mono); font-size: 10px; color: var(--text3); }
+
+/* info tooltip */
+.info-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 14px; height: 14px; border-radius: 50%;
+  font-family: var(--mono); font-size: 9px; font-weight: 500;
+  color: var(--text3); border: 1px solid var(--border2);
+  cursor: help; position: relative; flex-shrink: 0;
+  transition: all 0.15s;
+}
+.info-icon:hover { color: var(--blue); border-color: var(--blue); }
+.info-tip {
+  display: none; position: absolute; left: 50%; bottom: calc(100% + 8px);
+  transform: translateX(-50%); z-index: 100;
+  background: var(--tip-bg); border: 1px solid var(--border2);
+  border-radius: 6px; padding: 10px 12px;
+  width: 260px; font-size: 11px; line-height: 1.6;
+  color: var(--text2); font-family: var(--sans);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  pointer-events: none;
+}
+.info-tip::after {
+  content: ''; position: absolute; top: 100%; left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent; border-top-color: var(--tip-bg);
+}
+.info-icon:hover .info-tip { display: block; }
+.info-tip strong { color: var(--text); font-weight: 500; display: block; margin-bottom: 4px; }
+.info-tip .zone-list { margin-top: 6px; }
+.info-tip .zone-item { display: flex; align-items: center; gap: 6px; margin: 2px 0; }
+.info-tip .zone-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+
+.icard-val-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 13px; }
+.icard-val { font-family: var(--mono); font-size: 26px; font-weight: 500; color: var(--text); line-height: 1; }
+.icard-unit { font-family: var(--mono); font-size: 12px; color: var(--text2); }
+.icard-chg { font-family: var(--mono); font-size: 11px; padding: 2px 7px; border-radius: 3px; margin-left: auto; }
+.chg-up   { color: var(--green); background: var(--green-dim); }
+.chg-down { color: var(--red);   background: var(--red-dim);   }
+.chg-flat { color: var(--text2); background: var(--fill2); }
+
+/* zone bar */
+.zbar-labels { display: flex; justify-content: space-between; margin-bottom: 4px; }
+.zbar-label { font-family: var(--mono); font-size: 10px; color: var(--text3); }
+.zbar-track { position: relative; height: 4px; border-radius: 2px; overflow: hidden; background: var(--fill3); margin-bottom: 4px; }
+.zbar-zone { position: absolute; top: 0; height: 100%; opacity: 0.3; }
+.zbar-cursor {
+  position: absolute; top: 50%; transform: translate(-50%,-50%);
+  width: 10px; height: 10px; border-radius: 50%;
+  border: 2px solid var(--bg2); z-index: 2; transition: left 0.5s ease;
+  box-shadow: 0 0 5px currentColor;
+}
+.zbar-zone-now { font-family: var(--mono); font-size: 10px; text-align: right; margin-bottom: 8px; }
+
+/* percentile badge */
+.percentile-badge {
+  font-family: var(--mono); font-size: 10px; color: var(--text3);
+  padding: 1px 6px; border-radius: 3px;
+  background: var(--fill1); border: 1px solid var(--border);
+  white-space: nowrap; letter-spacing: 0.03em;
+}
+
+/* date label */
+.icard-date {
+  font-family: var(--mono); font-size: 10px; color: var(--text2);
+  margin-left: 6px; opacity: 0.85;
+}
+
+/* gauge (fear & greed) - vertical arrow-up style */
+.gauge-wrap { position: relative; width: 100%; margin: 6px 0 4px; }
+.gauge-wrap svg { width: 100%; display: block; }
+
+.mini-chart { height: 36px; margin: 6px 0 8px; }
+.mini-chart canvas { width: 100%; height: 36px; display: block; }
+
+.icard-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.signal-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--mono); font-size: 10px;
+  padding: 3px 8px; border-radius: 3px; letter-spacing: 0.04em;
+}
+.sig-bull { background: var(--green-dim); color: var(--green); border: 1px solid rgba(0,200,150,0.2); }
+.sig-bear { background: var(--red-dim);   color: var(--red);   border: 1px solid rgba(255,77,106,0.2); }
+.sig-neutral { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(245,166,35,0.2); }
+.sig-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+.detail-link {
+  font-family: var(--mono); font-size: 10px; color: var(--text2);
+  text-decoration: none; padding: 3px 8px;
+  border: 1px solid var(--border2); border-radius: 3px;
+  background: var(--fill1);
+  white-space: nowrap; transition: all 0.15s; flex-shrink: 0;
+}
+.detail-link:hover { color: var(--blue); border-color: var(--blue); background: rgba(77,159,255,0.08); }
+
+.skel { background: var(--fill2); border-radius: 3px; animation: shimmer 1.5s infinite; }
+@keyframes shimmer {
+  0%,100% { opacity: 0.5; } 50% { opacity: 1; }
+}
+.err-label { font-family: var(--mono); font-size: 11px; color: var(--red); opacity: 0.8; }
+
+@media (max-width: 600px) {
+  .header, .main { padding-left: 14px; padding-right: 14px; }
+  .tabs { padding: 0 14px; }
+  .indicator-grid { grid-template-columns: 1fr; }
+  .info-tip { width: 200px; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <span class="logo">MACRO<em>/</em>RADAR</span>
+    <span class="header-title">全球宏观市场仪表盘</span>
+  </div>
+  <div class="header-right">
+    <span class="update-time" id="updateTime">—</span>
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="切换主题">☀</button>
+    <button class="refresh-btn" id="refreshBtn" onclick="loadAll()">↻ 刷新</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" data-layer="macro"     onclick="switchLayer('macro')">    <span class="tab-dot" style="background:#9b7fff"></span>宏观</button>
+  <button class="tab"        data-layer="liquidity" onclick="switchLayer('liquidity')"><span class="tab-dot" style="background:#4d9fff"></span>流动性</button>
+  <button class="tab"        data-layer="sentiment" onclick="switchLayer('sentiment')"><span class="tab-dot" style="background:#ff4d6a"></span>情绪</button>
+  <button class="tab"        data-layer="market"    onclick="switchLayer('market')">   <span class="tab-dot" style="background:#00c896"></span>市场</button>
+  <button class="tab"        data-layer="commodity" onclick="switchLayer('commodity')"><span class="tab-dot" style="background:#f5a623"></span>商品/另类</button>
+</div>
+
+<div class="main">
+  <div class="summary-bar">
+    <span class="summary-label">综合信号</span>
+    <div class="summary-pill"><span class="dot" style="background:#9b7fff"></span>宏观 <span id="sig-macro"     style="color:var(--text3)">…</span></div>
+    <div class="summary-pill"><span class="dot" style="background:#4d9fff"></span>流动性 <span id="sig-liquidity" style="color:var(--text3)">…</span></div>
+    <div class="summary-pill"><span class="dot" style="background:#ff4d6a"></span>情绪 <span id="sig-sentiment" style="color:var(--text3)">…</span></div>
+    <div class="summary-pill"><span class="dot" style="background:#00c896"></span>市场 <span id="sig-market"    style="color:var(--text3)">…</span></div>
+    <div class="summary-pill"><span class="dot" style="background:#f5a623"></span>商品 <span id="sig-commodity" style="color:var(--text3)">…</span></div>
+  </div>
+
+  <div class="cross-signal-bar">
+    <div id="cross-signal"><span class="cross-empty">加载中…</span></div>
+    <span class="info-icon" style="margin-left:auto;flex-shrink:0">?<span class="info-tip cross-rules-tip"><strong>跨层联动规则</strong>
+<span class="zone-item"><span class="zone-dot" style="background:var(--green)"></span>宏观偏空 + 情绪恐惧 → 逆向买入机会</span>
+<span class="zone-item"><span class="zone-dot" style="background:var(--amber)"></span>流动性偏空 + 市场偏多 → 警惕虚假繁荣</span>
+<span class="zone-item"><span class="zone-dot" style="background:var(--red)"></span>收益率曲线偏空 + 市场偏多 → 衰退预警</span>
+<span class="zone-item"><span class="zone-dot" style="background:var(--green)"></span>宏观+流动性偏多 + 市场偏空 → 基本面背离</span>
+<span class="zone-item"><span class="zone-dot" style="background:var(--amber)"></span>情绪偏多 + 流动性偏空 → 情绪过热风险</span>
+<span class="zone-item"><span class="zone-dot" style="background:var(--green)"></span>VIX恐慌 + 宏观不差 → 恐慌性错杀</span>
+<span class="zone-item"><span class="zone-dot" style="background:var(--amber)"></span>高收益债利差走宽 + 市场偏多 → 信用风险隐忧</span>
+<span class="zone-item"><span class="zone-dot" style="background:var(--blue)"></span>四层全偏多 → 全面共振偏多</span>
+<span class="zone-item"><span class="zone-dot" style="background:var(--red)"></span>四层全偏空 → 全面共振偏空</span>
+</span></span>
+  </div>
+
+  <div class="layer-section active" id="layer-macro">
+    <div class="section-header"><span class="section-title">宏观层面</span><span class="section-desc">经济基本面，决定资产长期方向</span></div>
+    <div class="indicator-grid" id="grid-macro"></div>
+  </div>
+  <div class="layer-section" id="layer-liquidity">
+    <div class="section-header"><span class="section-title">流动性 / 资金层面</span><span class="section-desc">货币与信用环境，决定市场弹性</span></div>
+    <div class="indicator-grid" id="grid-liquidity"></div>
+  </div>
+  <div class="layer-section" id="layer-sentiment">
+    <div class="section-header"><span class="section-title">市场情绪与风险</span><span class="section-desc">极值信号，辅助反向判断</span></div>
+    <div class="indicator-grid" id="grid-sentiment"></div>
+  </div>
+  <div class="layer-section" id="layer-market">
+    <div class="section-header"><span class="section-title">主要市场指数</span><span class="section-desc">全球核心市场估值与趋势定位</span></div>
+    <div class="indicator-grid" id="grid-market"></div>
+  </div>
+  <div class="layer-section" id="layer-commodity">
+    <div class="section-header"><span class="section-title">商品 / 另类资产</span><span class="section-desc">大宗商品与另类资产，反映通胀与风险偏好</span></div>
+    <div class="indicator-grid" id="grid-commodity"></div>
+  </div>
+</div>
+
+<script>
+// ─── Indicator config ─────────────────────────────────────────────────────────
+const LAYERS = {
+  macro: {
+    label: '宏观层面',
+    indicators: [
+      {
+        id: 'fedfunds', name: '美联储基准利率', unit: '%', tag: 'FRED',
+        range: { min: 0, max: 6.5 },
+        zones: [
+          { label: '极宽松', max: 1,   color: '#00c896' },
+          { label: '宽松',   max: 2.5, color: '#4d9fff' },
+          { label: '中性',   max: 4,   color: '#f5a623' },
+          { label: '偏紧',   max: 5.5, color: '#ff7a45' },
+          { label: '紧缩',   max: 6.5, color: '#ff4d6a' },
+        ],
+        signal: (v, prev) => {
+          const falling = prev != null && v < prev;
+          const rising  = prev != null && v > prev;
+          if (v <= 2.5) return ['bull', falling ? '快速降息，强利好' : '宽松利好'];
+          if (v <= 4.5) return ['neutral', falling ? '降息中，转多信号' : rising ? '加息中，偏紧' : '中性观察'];
+          return ['bear', falling ? '高利率但开始降息' : '高利率压制'];
+        },
+        fetch: fetchFRED('FEDFUNDS'),
+        link: 'https://fred.stlouisfed.org/series/FEDFUNDS', linkLabel: 'FRED'
+      },
+      {
+        id: 'cpi', name: '美国 CPI 同比', unit: '%', tag: 'FRED',
+        range: { min: -1, max: 10 },
+        zones: [
+          { label: '通缩',   max: 0,  color: '#4d9fff' },
+          { label: '低通胀', max: 2,  color: '#00c896' },
+          { label: '目标区', max: 3,  color: '#00c896' },
+          { label: '偏高',   max: 6,  color: '#f5a623' },
+          { label: '过热',   max: 10, color: '#ff4d6a' },
+        ],
+        signal: (v, prev) => {
+          const falling = prev != null && v < prev;
+          const rising  = prev != null && v > prev;
+          if (v >= 1.5 && v <= 3) return ['bull', falling ? '通胀下行，利好' : '通胀受控'];
+          if (v <= 5) return ['neutral', falling ? '通胀回落中' : rising ? '通胀上行中' : '通胀偏高'];
+          return ['bear', falling ? '通胀见顶回落' : '通胀过热'];
+        },
+        fetch: fetchFRED_YoY('CPIAUCSL'),
+        link: 'https://fred.stlouisfed.org/series/CPIAUCSL', linkLabel: 'FRED'
+      },
+      {
+        id: 'us10y', name: '美国10年期国债利率', unit: '%', tag: 'Yahoo',
+        range: { min: 0, max: 6 },
+        zones: [
+          { label: '极低', max: 1,   color: '#00c896' },
+          { label: '偏低', max: 2.5, color: '#4d9fff' },
+          { label: '中性', max: 3.5, color: '#f5a623' },
+          { label: '偏高', max: 4.5, color: '#ff7a45' },
+          { label: '极高', max: 6,   color: '#ff4d6a' },
+        ],
+        signal: (v, prev) => {
+          const falling = prev != null && v < prev;
+          const rising  = prev != null && v > prev;
+          if (v <= 2.5) return ['bull', falling ? '利率持续下行，利好估值' : '低利率环境'];
+          if (v <= 3.5) return ['neutral', falling ? '利率回落中' : rising ? '利率上行中' : '利率中性'];
+          if (v <= 4.5) return ['neutral', falling ? '高位回落信号' : '利率偏高'];
+          return ['bear', rising ? '利率飙升，压制估值' : '高利率压制'];
+        },
+        fetch: fetchYahoo('^TNX'),
+        link: 'https://finance.yahoo.com/quote/%5ETNX', linkLabel: 'Yahoo Finance',
+        info: {
+          title: '美国10年期国债利率 (10Y Treasury Yield)',
+          desc: '全球资产定价的锚，反映市场对长期经济增长和通胀的预期。10Y利率下行利好成长股估值，上行则压制估值。与Fed基准利率不同，10Y由市场交易决定，更能反映真实资金成本。',
+          zones: [
+            { label: '< 1% 极低', color: '#00c896', hint: '极低利率，通常对应危机模式' },
+            { label: '1-2.5% 偏低', color: '#4d9fff', hint: '低利率环境，利好成长股' },
+            { label: '2.5-3.5% 中性', color: '#f5a623', hint: '利率适中，市场均衡' },
+            { label: '3.5-4.5% 偏高', color: '#ff7a45', hint: '利率偏高，估值承压' },
+            { label: '> 4.5% 极高', color: '#ff4d6a', hint: '高利率压制，关注债券吸引力' },
+          ]
+        }
+      },
+      {
+        id: 't10y2y', name: '收益率曲线 10Y-2Y', unit: '%', tag: 'Yahoo',
+        refLine: 0,
+        range: { min: -2, max: 3 },
+        zones: [
+          { label: '深度倒挂', max: -1,  color: '#ff4d6a' },
+          { label: '倒挂',     max: 0,   color: '#ff7a45' },
+          { label: '平坦',     max: 0.5, color: '#f5a623' },
+          { label: '正常',     max: 3,   color: '#00c896' },
+        ],
+        signal: (v, prev) => {
+          const wasInverted = prev != null && prev < 0;
+          const isInverted  = v < 0;
+          const steepening  = prev != null && v > prev;
+          // 倒挂→恢复(un-invert)：衰退开始信号，最危险
+          if (wasInverted && !isInverted) return ['bear', '曲线恢复，衰退预警'];
+          // 倒挂中但趋陡：市场还在涨，但需警惕
+          if (isInverted && steepening) return ['neutral', '倒挂趋缓，关注恢复时点'];
+          // 持续倒挂：股市往往还能涨
+          if (isInverted) return ['neutral', '曲线倒挂中，股市未必跌'];
+          // 正常且趋陡
+          if (v >= 0.5) return ['bull', steepening ? '曲线趋陡，经济扩张' : '曲线正常'];
+          // 平坦
+          return ['neutral', '曲线平坦，关注方向'];
+        },
+        fetch: fetchYieldCurve(),
+        link: 'https://finance.yahoo.com/quote/%5ETNX', linkLabel: 'Yahoo Finance'
+      },
+      {
+        id: 'unrate', name: '美国失业率', unit: '%', tag: 'FRED',
+        range: { min: 2, max: 12 },
+        zones: [
+          { label: '过热', max: 3.5, color: '#f5a623' },
+          { label: '健康', max: 5,   color: '#00c896' },
+          { label: '松弛', max: 7,   color: '#f5a623' },
+          { label: '疲弱', max: 12,  color: '#ff4d6a' },
+        ],
+        signal: (v, prev) => {
+          const rising = prev != null && v > prev;
+          const falling = prev != null && v < prev;
+          if (v <= 4) return ['neutral', rising ? '就业过热，关注拐点' : '就业过热'];
+          if (v <= 5.5) return ['bull', rising ? '失业率缓升' : falling ? '就业改善' : '就业健康'];
+          return ['bear', rising ? '失业加速上升' : '就业疲弱'];
+        },
+        fetch: fetchFRED('UNRATE'),
+        link: 'https://fred.stlouisfed.org/series/UNRATE', linkLabel: 'FRED'
+      },
+      {
+        id: 'usdcny', name: '美元/人民币', unit: '', tag: 'Yahoo',
+        range: { min: 6.0, max: 8.0 },
+        zones: [
+          { label: '人民币强', max: 6.5, color: '#00c896' },
+          { label: '偏强',     max: 7.0, color: '#4d9fff' },
+          { label: '中性',     max: 7.3, color: '#f5a623' },
+          { label: '偏弱',     max: 7.6, color: '#ff7a45' },
+          { label: '人民币弱', max: 8.0, color: '#ff4d6a' },
+        ],
+        signal: (v, _prev) => v <= 6.8 ? ['bull','人民币偏强'] : v <= 7.4 ? ['neutral','汇率中性'] : ['bear','人民币偏弱'],
+        fetch: fetchYahoo('CNY=X'),
+        link: 'https://finance.yahoo.com/quote/CNY%3DX', linkLabel: 'Yahoo Finance'
+      },
+      {
+        id: 'usdjpy', name: '美元/日元', unit: '', tag: 'Yahoo',
+        range: { min: 90, max: 170 },
+        zones: [
+          { label: '日元极强', max: 105, color: '#00c896' },
+          { label: '日元偏强', max: 120, color: '#4d9fff' },
+          { label: '中性',     max: 140, color: '#f5a623' },
+          { label: '日元偏弱', max: 155, color: '#ff7a45' },
+          { label: '日元极弱', max: 170, color: '#ff4d6a' },
+        ],
+        signal: (v, _prev) => v <= 120 ? ['bull','日元强势'] : v <= 145 ? ['neutral','汇率中性'] : ['bear','日元弱势'],
+        fetch: fetchYahoo('JPY=X'),
+        link: 'https://finance.yahoo.com/quote/JPY%3DX', linkLabel: 'Yahoo Finance'
+      },
+      {
+        id: 'crude_macro', name: '原油 WTI (宏观)', unit: '$', tag: 'Yahoo',
+        range: { min: 30, max: 130 },
+        zones: [
+          { label: '极低', max: 45,  color: '#4d9fff' },
+          { label: '偏低', max: 60,  color: '#00c896' },
+          { label: '正常', max: 80,  color: '#00c896' },
+          { label: '偏高', max: 100, color: '#f5a623' },
+          { label: '极高', max: 130, color: '#ff4d6a' },
+        ],
+        signal: (v, _prev) => v >= 55 && v <= 85 ? ['bull','油价合理'] : v > 95 ? ['bear','通胀压力'] : ['neutral','油价偏低'],
+        fetch: fetchYahoo('CL=F'),
+        link: 'https://finance.yahoo.com/quote/CL%3DF', linkLabel: 'Yahoo Finance'
+      },
+      {
+        id: 'cfnai', name: '芝加哥联储全国活动指数', unit: '', tag: 'FRED',
+        refLine: 0,
+        range: { min: -3, max: 3 },
+        zones: [
+          { label: '深度衰退', max: -1.5, color: '#ff4d6a' },
+          { label: '衰退风险', max: -0.7, color: '#ff7a45' },
+          { label: '低于趋势', max: 0,    color: '#f5a623' },
+          { label: '温和扩张', max: 0.7,  color: '#00c896' },
+          { label: '强劲增长', max: 1.5,  color: '#4d9fff' },
+          { label: '过热风险', max: 3,    color: '#f5a623' },
+        ],
+        signal: (v, prev) => {
+          const rising  = prev != null && v > prev;
+          const falling = prev != null && v < prev;
+          if (v >= 0 && v <= 0.7) return ['bull', falling ? '扩张放缓' : '经济温和扩张'];
+          if (v >= -0.7) return ['neutral', rising ? '经济企稳回升' : falling ? '增长加速放缓' : '增长低于趋势'];
+          return ['bear', rising ? '衰退中微弱反弹' : '经济衰退风险'];
+        },
+        fetch: fetchFRED('CFNAI'),
+        link: 'https://fred.stlouisfed.org/series/CFNAI', linkLabel: 'FRED',
+        info: {
+          title: '芝加哥联储全国活动指数 (CFNAI)',
+          desc: '由85个月度经济指标加权合成，0表示经济按历史趋势增长，负值表示低于趋势，正值表示高于趋势。是全面衡量经济活动的领先指标，覆盖面比PMI更广。',
+          zones: [
+            { label: '< -1.5 深度衰退', color: '#ff4d6a', hint: '经济活动大幅萎缩' },
+            { label: '-1.5 ~ -0.7 衰退风险', color: '#ff7a45', hint: '经济可能进入衰退' },
+            { label: '-0.7 ~ 0 低于趋势', color: '#f5a623', hint: '经济增长放缓' },
+            { label: '0 ~ 0.7 温和扩张', color: '#00c896', hint: '经济健康增长' },
+            { label: '0.7 ~ 1.5 强劲增长', color: '#4d9fff', hint: '增长高于趋势，需关注通胀' },
+            { label: '> 1.5 过热风险', color: '#f5a623', hint: '经济过热，通胀压力增大' },
+          ]
+        }
+      },
+      {
+        id: 'chn_pmi', name: '中国制造业 PMI', unit: '', tag: '东方财富',
+        refLine: 50,
+        range: { min: 45, max: 55 },
+        zones: [
+          { label: '深度收缩', max: 47, color: '#ff4d6a' },
+          { label: '收缩',     max: 49, color: '#ff7a45' },
+          { label: '临界',     max: 50, color: '#f5a623' },
+          { label: '温和扩张', max: 51.5, color: '#00c896' },
+          { label: '强劲扩张', max: 55, color: '#4d9fff' },
+        ],
+        signal: (v, prev) => {
+          const rising  = prev != null && v > prev;
+          const falling = prev != null && v < prev;
+          if (v >= 50 && v <= 52) return ['bull', rising ? 'PMI回升扩张' : falling ? '扩张放缓' : '制造业温和扩张'];
+          if (v >= 49) return ['neutral', rising ? 'PMI回升至临界' : 'PMI临界附近'];
+          return ['bear', rising ? '收缩中微弱反弹' : '制造业收缩'];
+        },
+        fetch: fetchChinaPMI(),
+        link: 'https://data.eastmoney.com/cjsj/pmi.html', linkLabel: '东方财富',
+        info: {
+          title: '中国制造业采购经理指数 (PMI)',
+          desc: '由国家统计局和中国物流与采购联合会联合发布，反映制造业景气程度。50为荣枯线，高于50表示扩张，低于50表示收缩。是观察中国经济最及时的月度领先指标。',
+          zones: [
+            { label: '< 47 深度收缩', color: '#ff4d6a', hint: '制造业严重萎缩，经济下行压力大' },
+            { label: '47-49 收缩', color: '#ff7a45', hint: '制造业处于收缩区间' },
+            { label: '49-50 临界', color: '#f5a623', hint: '接近荣枯线，方向不明' },
+            { label: '50-51.5 温和扩张', color: '#00c896', hint: '制造业稳健扩张' },
+            { label: '> 51.5 强劲扩张', color: '#4d9fff', hint: '制造业强劲，需关注过热' },
+          ]
+        }
+      },
+      {
+        id: 'llm_tokens', name: '大模型 Token 周用量', unit: 'T/week', tag: 'OpenRouter',
+        range: { min: 0, max: 60 },
+        zones: [
+          { label: '萌芽', max: 5,   color: '#9b7fff' },
+          { label: '成长', max: 15,  color: '#4d9fff' },
+          { label: '爆发', max: 30,  color: '#00c896' },
+          { label: '规模化', max: 50, color: '#f5a623' },
+          { label: '基础设施', max: 60, color: '#ff7a45' },
+        ],
+        signal: (v, prev) => {
+          const rising = prev != null && v > prev;
+          const falling = prev != null && v < prev;
+          if (v >= 30) return ['bull', falling ? '高位小幅回落' : rising ? 'AI需求持续扩张' : 'AI需求规模化'];
+          if (v >= 15) return ['bull', falling ? '爆发期短暂回调' : 'AI需求爆发增长'];
+          if (v >= 5) return ['neutral', rising ? 'AI需求加速' : falling ? '增长放缓' : 'AI需求成长中'];
+          return ['neutral', 'AI需求萌芽期'];
+        },
+        fetch: fetchLLMTokenUsage(),
+        link: 'https://openrouter.ai/rankings', linkLabel: 'OpenRouter',
+        info: {
+          title: '大模型 Token 周用量 (LLM Weekly Token Usage)',
+          desc: '基于 OpenRouter 平台 Top 50 模型 + Other 汇总的每周 Token 消耗总量（prompt + completion），反映全球大模型算力需求的实时景气度。Token 用量增长 = AI 应用渗透加深，是科技股和算力基建的前瞻指标。与官网 Rankings 页面数据口径一致。',
+          zones: [
+            { label: '< 5T/week 萌芽期', color: '#9b7fff', hint: 'AI应用尚在早期探索阶段' },
+            { label: '5-15T/week 成长期', color: '#4d9fff', hint: 'AI需求快速增长，应用场景拓展' },
+            { label: '15-30T/week 爆发期', color: '#00c896', hint: 'AI需求爆发，算力供不应求' },
+            { label: '30-50T/week 规模化', color: '#f5a623', hint: 'AI已成为基础设施级需求' },
+            { label: '> 50T/week 基础设施', color: '#ff7a45', hint: 'AI算力成为经济底层基础设施' },
+          ]
+        }
+      },
+    ]
+  },
+  liquidity: {
+    label: '流动性',
+    indicators: [
+      {
+        id: 'walcl', name: 'Fed 资产负债表', unit: 'T$', tag: 'FRED',
+        range: { min: 3, max: 10 },
+        zones: [
+          { label: '收缩', max: 5,  color: '#ff4d6a' },
+          { label: '中性', max: 7,  color: '#f5a623' },
+          { label: '扩张', max: 10, color: '#00c896' },
+        ],
+        signal: (v, prev) => {
+          const expanding = prev != null && v > prev;
+          const shrinking = prev != null && v < prev;
+          if (v >= 8) return ['bull', shrinking ? '扩表放缓' : '宽松扩表'];
+          if (v >= 6) return ['neutral', expanding ? '转向扩表' : shrinking ? '缩表进行中' : '中性'];
+          return ['bear', expanding ? '缩表接近尾声' : '缩表收紧'];
+        },
+        fetch: fetchFRED_Trillions('WALCL'),
+        link: 'https://fred.stlouisfed.org/series/WALCL', linkLabel: 'FRED'
+      },
+      {
+        id: 'dxy', name: '美元指数 DXY', unit: '', tag: 'Yahoo',
+        range: { min: 85, max: 115 },
+        zones: [
+          { label: '极弱', max: 90,  color: '#00c896' },
+          { label: '偏弱', max: 97,  color: '#4d9fff' },
+          { label: '中性', max: 103, color: '#f5a623' },
+          { label: '偏强', max: 108, color: '#ff7a45' },
+          { label: '极强', max: 115, color: '#ff4d6a' },
+        ],
+        signal: (v, _prev) => v <= 97 ? ['bull','弱美元利好'] : v <= 103 ? ['neutral','美元中性'] : ['bear','强美元压制'],
+        fetch: fetchYahoo('DX-Y.NYB'),
+        link: 'https://finance.yahoo.com/quote/DX-Y.NYB', linkLabel: 'Yahoo Finance'
+      },
+      {
+        id: 'hyspread', name: '高收益债利差', unit: '%', tag: 'FRED',
+        range: { min: 2, max: 12 },
+        zones: [
+          { label: '过热', max: 3,  color: '#f5a623' },
+          { label: '乐观', max: 4.5, color: '#00c896' },
+          { label: '正常', max: 6,  color: '#4d9fff' },
+          { label: '谨慎', max: 8,  color: '#f5a623' },
+          { label: '恐慌', max: 12, color: '#ff4d6a' },
+        ],
+        signal: (v, prev) => {
+          const widening  = prev != null && v > prev;
+          const narrowing = prev != null && v < prev;
+          if (v <= 4.5) return ['bull', widening ? '利差微扩，关注' : '信用乐观'];
+          if (v <= 6.5) return ['neutral', narrowing ? '信用改善中' : widening ? '信用边际收紧' : '信用正常'];
+          return ['bear', narrowing ? '利差仍高但收窄' : '信用收紧'];
+        },
+        fetch: fetchFRED('BAMLH0A0HYM2'),
+        link: 'https://fred.stlouisfed.org/series/BAMLH0A0HYM2', linkLabel: 'FRED'
+      },
+      {
+        id: 'm2yoy', name: '美国 M2 同比', unit: '%', tag: 'FRED',
+        range: { min: -5, max: 30 },
+        zones: [
+          { label: '收缩', max: 0,  color: '#ff4d6a' },
+          { label: '偏低', max: 5,  color: '#f5a623' },
+          { label: '健康', max: 10, color: '#00c896' },
+          { label: '偏高', max: 20, color: '#f5a623' },
+          { label: '过剩', max: 30, color: '#ff4d6a' },
+        ],
+        signal: (v, prev) => {
+          const rising  = prev != null && v > prev;
+          const falling = prev != null && v < prev;
+          if (v >= 3 && v <= 12) return ['bull', falling ? 'M2增速放缓' : 'M2健康增长'];
+          if (v >= 0) return ['neutral', rising ? 'M2触底回升' : 'M2偏低'];
+          return ['bear', rising ? 'M2跌幅收窄' : 'M2负增长'];
+        },
+        fetch: fetchFRED_YoY('M2SL'),
+        link: 'https://fred.stlouisfed.org/series/M2SL', linkLabel: 'FRED'
+      },
+      {
+        id: 'credit_yoy', name: '美国银行信贷同比', unit: '%', tag: 'FRED',
+        range: { min: -5, max: 20 },
+        zones: [
+          { label: '信贷收缩', max: 0,  color: '#ff4d6a' },
+          { label: '偏低',     max: 3,  color: '#f5a623' },
+          { label: '健康',     max: 8,  color: '#00c896' },
+          { label: '偏热',     max: 12, color: '#f5a623' },
+          { label: '过热',     max: 20, color: '#ff4d6a' },
+        ],
+        signal: (v, prev) => {
+          const rising  = prev != null && v > prev;
+          const falling = prev != null && v < prev;
+          if (v >= 3 && v <= 10) return ['bull', falling ? '信贷增速放缓' : '信贷健康增长'];
+          if (v >= 0) return ['neutral', rising ? '信贷触底回升' : '信贷偏弱'];
+          return ['bear', rising ? '信贷跌幅收窄' : '信贷收缩'];
+        },
+        fetch: fetchFRED_WeeklyYoY('TOTLL'),
+        link: 'https://fred.stlouisfed.org/series/TOTLL', linkLabel: 'FRED',
+        info: {
+          title: '美国银行信贷同比',
+          desc: '全部商业银行贷款及租赁余额的同比增速，反映信用传导的"最后一公里"。M2扩张但信贷收缩意味着流动性陷阱，信贷才是实体经济获得资金的真实渠道。',
+          zones: [
+            { label: '< 0% 信贷收缩', color: '#ff4d6a', hint: '银行缩减信贷，经济承压' },
+            { label: '0-3% 偏低', color: '#f5a623', hint: '信贷增长乏力，需关注传导' },
+            { label: '3-8% 健康', color: '#00c896', hint: '信贷稳健增长，经济活跃' },
+            { label: '8-12% 偏热', color: '#f5a623', hint: '信贷扩张较快，需关注风险' },
+            { label: '> 12% 过热', color: '#ff4d6a', hint: '信贷过度扩张，可能引发坏账' },
+          ]
+        }
+      },
+      {
+        id: 'shibor3m', name: 'SHIBOR 3M', unit: '%', tag: '中国货币网',
+        range: { min: 0.5, max: 6 },
+        zones: [
+          { label: '极宽松', max: 1.5, color: '#00c896' },
+          { label: '宽松',   max: 2.5, color: '#4d9fff' },
+          { label: '中性',   max: 3.5, color: '#f5a623' },
+          { label: '偏紧',   max: 4.5, color: '#ff7a45' },
+          { label: '紧张',   max: 6,   color: '#ff4d6a' },
+        ],
+        signal: (v, prev) => {
+          const rising  = prev != null && v > prev;
+          const falling = prev != null && v < prev;
+          if (v <= 2.5) return ['bull', rising ? '低利率回升' : falling ? '流动性持续宽松' : '流动性宽松'];
+          if (v <= 3.5) return ['neutral', rising ? '资金面趋紧' : falling ? '资金面转松' : '流动性中性'];
+          return ['bear', falling ? '利率仍高但回落' : '流动性紧张'];
+        },
+        fetch: fetchShibor(),
+        link: 'https://www.chinamoney.com.cn/chinese/bkshibor/', linkLabel: '中国货币网',
+        info: {
+          title: 'SHIBOR 3M（上海银行间同业拆放利率 3个月）',
+          desc: '中国版的"LIBOR"，由18家报价银行每日报价计算得出，反映中国银行间市场短期资金成本。3个月期限是观察中期流动性状况的核心指标，对债市利率定价有直接指导意义。SHIBOR走高=银行间资金紧张，走低=流动性充裕。',
+          zones: [
+            { label: '< 1.5% 极宽松', color: '#00c896', hint: '流动性极度充裕，央行宽松政策' },
+            { label: '1.5-2.5% 宽松', color: '#4d9fff', hint: '资金面宽松，市场利率低位' },
+            { label: '2.5-3.5% 中性', color: '#f5a623', hint: '流动性适度，资金面平衡' },
+            { label: '3.5-4.5% 偏紧', color: '#ff7a45', hint: '资金面偏紧，银行融资成本上升' },
+            { label: '> 4.5% 紧张', color: '#ff4d6a', hint: '流动性紧张，可能引发"钱荒"' },
+          ]
+        }
+      },
+      {
+        id: 'lpr1y', name: 'LPR 1Y', unit: '%', tag: '中国货币网',
+        range: { min: 2, max: 5.5 },
+        zones: [
+          { label: '极宽松', max: 3.0, color: '#00c896' },
+          { label: '宽松',   max: 3.6, color: '#4d9fff' },
+          { label: '中性',   max: 4.1, color: '#f5a623' },
+          { label: '偏紧',   max: 4.6, color: '#ff7a45' },
+          { label: '紧张',   max: 5.5, color: '#ff4d6a' },
+        ],
+        signal: (v, prev) => {
+          const falling = prev != null && v < prev;
+          const rising  = prev != null && v > prev;
+          if (v <= 3.1) return ['bull', falling ? 'LPR下调，实体融资成本降低' : '低利率环境'];
+          if (v <= 3.8) return ['bull', falling ? 'LPR下调中' : '利率适中'];
+          if (v <= 4.3) return ['neutral', falling ? '利率高位回落' : rising ? '利率上行压力' : '利率中性'];
+          return ['bear', rising ? 'LPR上调，融资成本攀升' : '高利率压制实体'];
+        },
+        fetch: fetchLPR(),
+        link: 'https://www.chinamoney.com.cn/chinese/bklpr/', linkLabel: '中国货币网',
+        info: {
+          title: 'LPR 1Y（贷款市场报价利率 1年期）',
+          desc: 'LPR是实体经济贷款的基准利率，由18家银行每月20日报价计算。1年期LPR直接影响企业贷款和个人住房贷款利率。与SHIBOR不同，LPR反映的是实体经济的融资成本而非银行间资金成本。LPR下调=央行引导降低实体融资成本，LPR上调=融资环境收紧。两者配合看：SHIBOR反映银行间流动性，LPR反映实体融资成本，SHIBOR先动、LPR后跟。',
+          zones: [
+            { label: '< 3.0% 极宽松', color: '#00c896', hint: '央行强力降息，刺激信贷需求' },
+            { label: '3.0-3.6% 宽松', color: '#4d9fff', hint: '融资成本较低，支持实体经济' },
+            { label: '3.6-4.1% 中性', color: '#f5a623', hint: '利率水平适中' },
+            { label: '4.1-4.6% 偏紧', color: '#ff7a45', hint: '融资成本偏高，压制投资需求' },
+            { label: '> 4.6% 紧张', color: '#ff4d6a', hint: '高利率环境，实体经济承压' },
+          ]
+        }
+      },
+    ]
+  },
+  market: {
+    label: '市场',
+    indicators: [
+      {
+        id: 'sp500', name: 'S&P 500', unit: '', tag: 'Yahoo',
+        range: { min: 3000, max: 7000 },
+        zones: [
+          { label: '熊市', max: 4000, color: '#ff4d6a' },
+          { label: '低估', max: 4800, color: '#4d9fff' },
+          { label: '合理', max: 5800, color: '#00c896' },
+          { label: '偏高', max: 6500, color: '#f5a623' },
+          { label: '泡沫', max: 7000, color: '#ff4d6a' },
+        ],
+        signal: (v, _prev) => v >= 4800 && v <= 5800 ? ['bull','趋势健康'] : v < 4500 ? ['neutral','关注低估'] : ['neutral','高位谨慎'],
+        fetch: fetchYahoo('^GSPC'),
+        link: 'https://finance.yahoo.com/quote/%5EGSPC', linkLabel: 'Yahoo Finance'
+      },
+      {
+        id: 'nasdaq', name: 'Nasdaq 100', unit: '', tag: 'Yahoo',
+        range: { min: 8000, max: 24000 },
+        zones: [
+          { label: '熊市', max: 11000, color: '#ff4d6a' },
+          { label: '低估', max: 14000, color: '#4d9fff' },
+          { label: '合理', max: 19000, color: '#00c896' },
+          { label: '偏高', max: 22000, color: '#f5a623' },
+          { label: '泡沫', max: 24000, color: '#ff4d6a' },
+        ],
+        signal: (v, _prev) => v >= 14000 && v <= 19000 ? ['bull','趋势健康'] : v > 20000 ? ['neutral','高位谨慎'] : ['neutral','关注低估'],
+        fetch: fetchYahoo('^NDX'),
+        link: 'https://finance.yahoo.com/quote/%5ENDX', linkLabel: 'Yahoo Finance'
+      },
+      {
+        id: 'sox', name: '费城半导体 SOX', unit: '', tag: 'Yahoo',
+        range: { min: 2000, max: 8000 },
+        zones: [
+          { label: '熊市', max: 3000, color: '#ff4d6a' },
+          { label: '低估', max: 4000, color: '#4d9fff' },
+          { label: '合理', max: 5500, color: '#00c896' },
+          { label: '偏高', max: 6800, color: '#f5a623' },
+          { label: '泡沫', max: 8000, color: '#ff4d6a' },
+        ],
+        signal: (v, _prev) => v >= 4000 && v <= 5800 ? ['bull','AI板块健康'] : v > 6000 ? ['neutral','AI估值偏高'] : ['neutral','AI板块低迷'],
+        fetch: fetchYahoo('^SOX'),
+        link: 'https://finance.yahoo.com/quote/%5ESOX', linkLabel: 'Yahoo Finance'
+      },
+      {
+        id: 'sp500_pe', name: 'S&P 500 PE', unit: 'x', tag: 'Multpl',
+        range: { min: 5, max: 45 },
+        zones: [
+          { label: '极低估', max: 10, color: '#00c896' },
+          { label: '低估',   max: 15, color: '#4d9fff' },
+          { label: '合理',   max: 20, color: '#00c896' },
+          { label: '偏高',   max: 30, color: '#f5a623' },
+          { label: '泡沫',   max: 45, color: '#ff4d6a' },
+        ],
+        refLine: 16.2,
+        signal: (v, prev) => {
+          const falling = prev != null && v < prev;
+          const rising  = prev != null && v > prev;
+          if (v <= 12) return ['bull', falling ? '估值持续压缩' : '极低估值，历史性买入区'];
+          if (v <= 18) return ['bull', rising ? '估值扩张中' : '估值合理偏低'];
+          if (v <= 22) return ['neutral', rising ? '估值偏高但盈利支撑' : '估值适中'];
+          if (v <= 30) return ['neutral', rising ? '估值偏高，需盈利验证' : '高估值回落中'];
+          return ['bear', '估值极端，历史上多对应市场顶部'];
+        },
+        fetch: fetchSP500PE(),
+        link: 'https://www.multpl.com/s-p-500-pe-ratio', linkLabel: 'Multpl',
+        info: {
+          title: 'S&P 500 市盈率 PE (TTM)',
+          desc: '标普500指数的滚动12个月市盈率。历史均值约16倍，中位数约15倍。PE<15为低估区，15-20为合理区，>25为高估区。注意：低利率环境下PE中枢可能上移，需结合利率环境综合判断。PE极高不一定立即下跌，但长期回报通常较差。',
+          zones: [
+            { label: '< 10x 极低估', color: '#00c896', hint: '历史性低估，如2009年3月、1982年' },
+            { label: '10-15x 低估', color: '#4d9fff', hint: '低于历史中位数，长期回报较好' },
+            { label: '15-20x 合理', color: '#00c896', hint: '接近历史均值' },
+            { label: '20-30x 偏高', color: '#f5a623', hint: '高于均值，需盈利增长支撑' },
+            { label: '> 30x 泡沫', color: '#ff4d6a', hint: '极端估值，2000年互联网泡沫曾达44x' },
+          ]
+        }
+      },
+      {
+        id: 'shcomp', name: '上证指数', unit: '', tag: '中证指数',
+        range: { min: 2000, max: 5000 },
+        zones: [
+          { label: '熊市', max: 2600, color: '#ff4d6a' },
+          { label: '低估', max: 3100, color: '#4d9fff' },
+          { label: '合理', max: 3700, color: '#00c896' },
+          { label: '偏高', max: 4300, color: '#f5a623' },
+          { label: '过热', max: 5000, color: '#ff4d6a' },
+        ],
+        signal: (v, _prev) => v >= 3100 && v <= 3800 ? ['bull','合理区间'] : v < 3100 ? ['neutral','低估关注'] : ['neutral','偏高谨慎'],
+        fetch: fetchCSIndexPrice('000001'),
+        link: 'https://www.csindex.com.cn/zh-CN/indices/indicator/000001#/indices/family/detail?indexCode=000001', linkLabel: '中证指数'
+      },
+      {
+        id: 'csi300', name: '沪深 300', unit: '', tag: '中证指数',
+        range: { min: 2500, max: 6000 },
+        zones: [
+          { label: '熊市', max: 3000, color: '#ff4d6a' },
+          { label: '低估', max: 3600, color: '#4d9fff' },
+          { label: '合理', max: 4500, color: '#00c896' },
+          { label: '偏高', max: 5500, color: '#f5a623' },
+          { label: '过热', max: 6000, color: '#ff4d6a' },
+        ],
+        signal: (v, _prev) => v >= 3600 && v <= 4800 ? ['bull','合理区间'] : v < 3600 ? ['neutral','低估关注'] : ['neutral','偏高谨慎'],
+        fetch: fetchCSIndexPrice('000300'),
+        link: 'https://www.csindex.com.cn/zh-CN/indices/indicator/000300#/indices/family/detail?indexCode=000300', linkLabel: '中证指数'
+      },
+      {
+        id: 'chinext', name: '创业板指', unit: '', tag: 'Yahoo',
+        range: { min: 1000, max: 4000 },
+        zones: [
+          { label: '熊市', max: 1500, color: '#ff4d6a' },
+          { label: '低估', max: 2000, color: '#4d9fff' },
+          { label: '合理', max: 2700, color: '#00c896' },
+          { label: '偏高', max: 3400, color: '#f5a623' },
+          { label: '过热', max: 4000, color: '#ff4d6a' },
+        ],
+        signal: (v, _prev) => v >= 2000 && v <= 2800 ? ['bull','合理区间'] : v < 2000 ? ['neutral','低估关注'] : ['neutral','偏高谨慎'],
+        fetch: fetchYahoo('399006.SZ'),
+        link: 'https://finance.yahoo.com/quote/399006.SZ', linkLabel: 'Yahoo Finance'
+      },
+      {
+        id: 'star50', name: '科创 50', unit: '', tag: '中证指数',
+        range: { min: 600, max: 2200 },
+        zones: [
+          { label: '熊市', max: 800,  color: '#ff4d6a' },
+          { label: '低估', max: 1000, color: '#4d9fff' },
+          { label: '合理', max: 1400, color: '#00c896' },
+          { label: '偏高', max: 1800, color: '#f5a623' },
+          { label: '过热', max: 2200, color: '#ff4d6a' },
+        ],
+        signal: (v, _prev) => v >= 1000 && v <= 1500 ? ['bull','合理区间'] : v < 1000 ? ['neutral','低估关注'] : ['neutral','偏高谨慎'],
+        fetch: fetchCSIndexPrice('000688'),
+        link: 'https://www.csindex.com.cn/zh-CN/indices/indicator/000688#/indices/family/detail?indexCode=000688', linkLabel: '中证指数'
+      },
+      {
+        id: 'hsi', name: '恒生指数', unit: '', tag: 'Yahoo',
+        range: { min: 10000, max: 35000 },
+        zones: [
+          { label: '熊市', max: 14000, color: '#ff4d6a' },
+          { label: '低估', max: 18000, color: '#4d9fff' },
+          { label: '合理', max: 24000, color: '#00c896' },
+          { label: '偏高', max: 30000, color: '#f5a623' },
+          { label: '过热', max: 35000, color: '#ff4d6a' },
+        ],
+        signal: (v, _prev) => v >= 18000 && v <= 26000 ? ['bull','合理区间'] : v < 18000 ? ['neutral','低估关注'] : ['neutral','偏高谨慎'],
+        fetch: fetchYahoo('^HSI'),
+        link: 'https://finance.yahoo.com/quote/%5EHSI', linkLabel: 'Yahoo Finance'
+      },
+      {
+        id: 'csi300_pe', name: '沪深300 PE', unit: 'x', tag: '中证指数',
+        range: { min: 6, max: 25 },
+        zones: [
+          { label: '极低估', max: 9,  color: '#00c896' },
+          { label: '低估',   max: 11, color: '#4d9fff' },
+          { label: '合理',   max: 13, color: '#00c896' },
+          { label: '偏高',   max: 16, color: '#f5a623' },
+          { label: '泡沫',   max: 25, color: '#ff4d6a' },
+        ],
+        refLine: 12.4,
+        signal: (v, prev) => {
+          const falling = prev != null && v < prev;
+          const rising  = prev != null && v > prev;
+          if (v <= 9) return ['bull', falling ? '估值持续压缩' : '极低估值，历史底部区域'];
+          if (v <= 11) return ['bull', rising ? '估值修复中' : '估值偏低'];
+          if (v <= 13) return ['neutral', rising ? '估值温和扩张' : '估值合理'];
+          if (v <= 16) return ['neutral', rising ? '估值偏高，需警惕' : '高估值回落中'];
+          return ['bear', '估值极端，历史上多对应市场顶部'];
+        },
+        fetch: fetchIndexPE('000300'),
+        link: 'https://www.csindex.com.cn/zh-CN/indices/indicator/000300#/indices/family/detail?indexCode=000300', linkLabel: '中证指数',
+        info: {
+          title: '沪深300 市盈率 PE (TTM)',
+          desc: '沪深300指数的滚动市盈率。历史均值约12.4倍。PE<10为低估区，10-13为合理区，>15为高估区。A股波动较大，PE极端值是重要的逆向信号。与S&P 500 PE对比可判断中美估值差异。',
+          zones: [
+            { label: '< 9x 极低估', color: '#00c896', hint: '历史性低估，如2014年中、2018年底' },
+            { label: '9-11x 低估', color: '#4d9fff', hint: '低于中位数，长期回报较好' },
+            { label: '11-13x 合理', color: '#00c896', hint: '接近历史均值' },
+            { label: '13-16x 偏高', color: '#f5a623', hint: '高于均值，需盈利增长验证' },
+            { label: '> 16x 泡沫', color: '#ff4d6a', hint: '极端估值，2015年牛市曾达18x' },
+          ]
+        }
+      },
+      {
+        id: 'star50_pe', name: '科创50 PE', unit: 'x', tag: '中证指数',
+        range: { min: 15, max: 100 },
+        zones: [
+          { label: '低估',   max: 30, color: '#4d9fff' },
+          { label: '合理',   max: 50, color: '#00c896' },
+          { label: '偏高',   max: 70, color: '#f5a623' },
+          { label: '泡沫',   max: 100, color: '#ff4d6a' },
+        ],
+        refLine: 45,
+        signal: (v, prev) => {
+          const falling = prev != null && v < prev;
+          const rising  = prev != null && v > prev;
+          if (v <= 30) return ['bull', falling ? '估值持续压缩' : '低估值，科创板底部区域'];
+          if (v <= 50) return ['neutral', rising ? '估值扩张中' : '估值合理'];
+          if (v <= 70) return ['neutral', rising ? '估值偏高' : '高估值回落中'];
+          return ['bear', '估值极端，科创板泡沫区'];
+        },
+        fetch: fetchIndexPE('000688'),
+        link: 'https://www.csindex.com.cn/zh-CN/indices/indicator/000688#/indices/family/detail?indexCode=000688', linkLabel: '中证指数',
+        info: {
+          title: '科创50 市盈率 PE (TTM)',
+          desc: '科创板50指数的滚动市盈率。科创板以硬科技企业为主，成长性高但估值波动大。历史均值约45倍。PE<30为低估区，30-50为合理区，>70为高估区。科创50估值远高于主板，需结合盈利增速判断合理性。',
+          zones: [
+            { label: '< 30x 低估', color: '#4d9fff', hint: '低于历史中枢，可能存在机会' },
+            { label: '30-50x 合理', color: '#00c896', hint: '接近历史均值' },
+            { label: '50-70x 偏高', color: '#f5a623', hint: '高于均值，需盈利高增长支撑' },
+            { label: '> 70x 泡沫', color: '#ff4d6a', hint: '极端估值，风险较大' },
+          ]
+        }
+      },
+    ]
+  },
+  commodity: {
+    label: '商品/另类',
+    indicators: [
+      {
+        id: 'gold', name: '黄金 XAUUSD', unit: '$', tag: 'Yahoo',
+        range: { min: 1500, max: 3500 },
+        zones: [
+          { label: '低位', max: 1800, color: '#4d9fff' },
+          { label: '正常', max: 2200, color: '#00c896' },
+          { label: '偏高', max: 2700, color: '#f5a623' },
+          { label: '极高', max: 3500, color: '#ff4d6a' },
+        ],
+        signal: (v, _prev) => v >= 1800 && v <= 2400 ? ['neutral','金价稳健'] : v > 2400 ? ['bull','避险需求强'] : ['neutral','金价低迷'],
+        fetch: fetchYahoo('GC=F'),
+        link: 'https://finance.yahoo.com/quote/GC%3DF', linkLabel: 'Yahoo Finance'
+      },
+      {
+        id: 'crude', name: '原油 WTI', unit: '$', tag: 'Yahoo',
+        range: { min: 30, max: 130 },
+        zones: [
+          { label: '极低', max: 45,  color: '#4d9fff' },
+          { label: '偏低', max: 60,  color: '#00c896' },
+          { label: '正常', max: 80,  color: '#00c896' },
+          { label: '偏高', max: 100, color: '#f5a623' },
+          { label: '极高', max: 130, color: '#ff4d6a' },
+        ],
+        signal: (v, _prev) => v >= 55 && v <= 85 ? ['bull','油价合理'] : v > 95 ? ['bear','通胀压力'] : ['neutral','油价偏低'],
+        fetch: fetchYahoo('CL=F'),
+        link: 'https://finance.yahoo.com/quote/CL%3DF', linkLabel: 'Yahoo Finance'
+      },
+      {
+        id: 'copper', name: '铜 (经济温度计)', unit: '$', tag: 'Yahoo',
+        range: { min: 3, max: 6 },
+        zones: [
+          { label: '需求弱', max: 3.5, color: '#ff4d6a' },
+          { label: '偏低',   max: 4,   color: '#f5a623' },
+          { label: '正常',   max: 4.8, color: '#00c896' },
+          { label: '偏强',   max: 6,   color: '#f5a623' },
+        ],
+        signal: (v, _prev) => v >= 4 && v <= 4.8 ? ['bull','工业需求健康'] : v < 3.8 ? ['bear','经济预期弱'] : ['neutral','铜价偏高'],
+        fetch: fetchYahoo('HG=F'),
+        link: 'https://finance.yahoo.com/quote/HG%3DF', linkLabel: 'Yahoo Finance'
+      },
+      {
+        id: 'soybeans', name: '大豆', unit: '¢', tag: 'Yahoo',
+        range: { min: 800, max: 2000 },
+        zones: [
+          { label: '极低', max: 1000, color: '#4d9fff' },
+          { label: '偏低', max: 1200, color: '#00c896' },
+          { label: '正常', max: 1500, color: '#00c896' },
+          { label: '偏高', max: 1750, color: '#f5a623' },
+          { label: '极高', max: 2000, color: '#ff4d6a' },
+        ],
+        signal: (v, _prev) => v >= 1100 && v <= 1500 ? ['neutral','大豆价格正常'] : v > 1600 ? ['bear','农产品通胀压力'] : ['neutral','大豆价格偏低'],
+        fetch: fetchYahoo('ZS=F'),
+        link: 'https://finance.yahoo.com/quote/ZS%3DF', linkLabel: 'Yahoo Finance',
+        info: {
+          title: '大豆期货',
+          desc: '芝加哥期货交易所(CBOT)大豆期货价格，单位为美分/蒲式耳。大豆是重要的农产品指标，对通胀预期和供给冲击敏感。与铜/油形成互补——油铜反映工业需求，大豆反映气候/供给冲击。',
+          zones: [
+            { label: '< 1000 极低', color: '#4d9fff', hint: '供给过剩或需求极弱' },
+            { label: '1000-1200 偏低', color: '#00c896', hint: '价格低于成本线，农民可能减产' },
+            { label: '1200-1500 正常', color: '#00c896', hint: '供需平衡，价格合理' },
+            { label: '1500-1750 偏高', color: '#f5a623', hint: '供给紧张或需求旺盛' },
+            { label: '> 1750 极高', color: '#ff4d6a', hint: '严重供给冲击，推升食品通胀' },
+          ]
+        }
+      },
+      {
+        id: 'btc', name: 'Bitcoin', unit: '$', tag: 'Yahoo',
+        range: { min: 10000, max: 150000 },
+        zones: [
+          { label: '熊市', max: 30000,  color: '#ff4d6a' },
+          { label: '低估', max: 55000,  color: '#4d9fff' },
+          { label: '合理', max: 90000,  color: '#00c896' },
+          { label: '偏高', max: 115000, color: '#f5a623' },
+          { label: '泡沫', max: 150000, color: '#ff4d6a' },
+        ],
+        signal: (v, _prev) => v >= 50000 && v <= 90000 ? ['bull','多头结构'] : v < 40000 ? ['bear','空头警戒'] : ['neutral','高位谨慎'],
+        fetch: fetchYahoo('BTC-USD'),
+        link: 'https://finance.yahoo.com/quote/BTC-USD', linkLabel: 'Yahoo Finance'
+      },
+    ]
+  },
+  sentiment: {
+    label: '情绪',
+    indicators: [
+      {
+        id: 'feargreed', name: '贪婪恐惧指数', unit: '', tag: 'CNN',
+        gauge: true,
+        refLine: 50,
+        range: { min: 0, max: 100 },
+        zones: [
+          { label: '极度恐惧', max: 25, color: '#00c896' },
+          { label: '恐惧',     max: 45, color: '#4d9fff' },
+          { label: '中性',     max: 55, color: '#f5a623' },
+          { label: '贪婪',     max: 75, color: '#ff7a45' },
+          { label: '极度贪婪', max: 100, color: '#ff4d6a' },
+        ],
+        signal: (v, prev) => {
+          const rising = prev != null && v > prev;
+          if (v <= 25) return ['bull', rising ? '恐惧中反弹' : '极恐买入信号'];
+          if (v <= 45) return ['bull', rising ? '情绪回升' : '恐惧区关注'];
+          if (v >= 75) return ['bear', '极贪卖出信号'];
+          return ['neutral', '情绪中性'];
+        },
+        fetch: fetchFearGreed(),
+        link: 'https://edition.cnn.com/markets/fear-and-greed', linkLabel: 'CNN Fear & Greed',
+        info: {
+          title: 'CNN 贪婪恐惧指数',
+          desc: '综合衡量市场情绪的短期指标，由7个分项加权合成：市场动量、股价强度、股价广度、看跌/看涨期权、垃圾债需求、市场波动率(VIX)、避险需求。',
+          zones: [
+            { label: '0-25 极度恐惧', color: '#00c896', hint: '市场极度恐慌，往往是逆向买入时机' },
+            { label: '25-45 恐惧', color: '#4d9fff', hint: '市场偏悲观，可逐步关注' },
+            { label: '45-55 中性', color: '#f5a623', hint: '情绪均衡，无明确方向' },
+            { label: '55-75 贪婪', color: '#ff7a45', hint: '市场偏乐观，需警惕过热' },
+            { label: '75-100 极度贪婪', color: '#ff4d6a', hint: '市场极度亢奋，往往是卖出信号' },
+          ]
+        }
+      },
+      {
+        id: 'vix', name: 'VIX 恐慌指数', unit: '', tag: 'Yahoo',
+        refLine: 20,
+        range: { min: 0, max: 60 },
+        zones: [
+          { label: '极乐观', max: 13, color: '#f5a623' },
+          { label: '低波动', max: 20, color: '#00c896' },
+          { label: '正常',   max: 30, color: '#4d9fff' },
+          { label: '紧张',   max: 40, color: '#f5a623' },
+          { label: '恐慌',   max: 60, color: '#ff4d6a' },
+        ],
+        signal: (v, prev) => {
+          const rising = prev != null && v > prev;
+          const falling = prev != null && v < prev;
+          if (v <= 20) return ['bull', rising ? '波动率低位回升' : '市场平稳'];
+          if (v <= 30) return ['neutral', falling ? '恐慌消退中' : rising ? '波动加剧' : '波动加大'];
+          return ['bear', falling ? '恐慌中回落' : '市场恐慌'];
+        },
+        fetch: fetchYahoo('^VIX'),
+        link: 'https://finance.yahoo.com/quote/%5EVIX', linkLabel: 'Yahoo Finance',
+        info: {
+          title: 'VIX 恐慌指数',
+          desc: '基于S&P 500期权隐含波动率计算，反映市场对未来30天波动率的预期。被称为"恐慌指数"，是衡量市场风险情绪最常用的指标。',
+          zones: [
+            { label: '0-13 极乐观', color: '#f5a623', hint: '市场过度自信，可能暗藏风险' },
+            { label: '13-20 低波动', color: '#00c896', hint: '市场平稳，风险偏好正常' },
+            { label: '20-30 正常', color: '#4d9fff', hint: '波动略高，市场不确定性增加' },
+            { label: '30-40 紧张', color: '#f5a623', hint: '市场担忧升温，需关注风险' },
+            { label: '40-60 恐慌', color: '#ff4d6a', hint: '市场恐慌，往往伴随底部区域' },
+          ]
+        }
+      },
+      {
+        id: 'vixeq', name: 'VIXEQ 权益波动率', unit: '', tag: 'Yahoo',
+        refLine: 20,
+        range: { min: 0, max: 60 },
+        zones: [
+          { label: '极乐观', max: 13, color: '#f5a623' },
+          { label: '低波动', max: 20, color: '#00c896' },
+          { label: '正常',   max: 30, color: '#4d9fff' },
+          { label: '紧张',   max: 40, color: '#f5a623' },
+          { label: '恐慌',   max: 60, color: '#ff4d6a' },
+        ],
+        signal: (v, prev) => {
+          const falling = prev != null && v < prev;
+          if (v <= 20) return ['bull', falling ? '波动率持续走低' : '权益波动率低'];
+          if (v <= 30) return ['neutral', falling ? '权益波动回落' : '权益波动加大'];
+          return ['bear', falling ? '权益恐慌中回落' : '权益市场恐慌'];
+        },
+        fetch: fetchYahoo('^VIXEQ'),
+        link: 'https://finance.yahoo.com/quote/%5EVIXEQ', linkLabel: 'Yahoo Finance',
+        info: {
+          title: 'VIXEQ 权益波动率指数',
+          desc: 'CBOE S&P 500 Equity VIX，衡量S&P 500权益期权的隐含波动率。与VIX（基于指数期权）不同，VIXEQ基于个股权益期权计算，更能反映市场对个股层面风险的定价。当VIXEQ与VIX出现明显偏离时，说明市场对个股风险与系统性风险的定价出现分化。',
+          zones: [
+            { label: '0-13 极乐观', color: '#f5a623', hint: '权益市场过度乐观' },
+            { label: '13-20 低波动', color: '#00c896', hint: '权益市场平稳' },
+            { label: '20-30 正常', color: '#4d9fff', hint: '权益波动正常' },
+            { label: '30-40 紧张', color: '#f5a623', hint: '权益风险担忧升温' },
+            { label: '40-60 恐慌', color: '#ff4d6a', hint: '权益市场恐慌加剧' },
+          ]
+        }
+      },
+      {
+        id: 'vix_spread', name: 'VIX-VIXEQ 差值', unit: '', tag: '计算',
+        range: { min: -10, max: 15 },
+        zones: [
+          { label: '个股风险高', max: -3, color: '#ff4d6a' },
+          { label: '短期偏高',   max: -1, color: '#ff7a45' },
+          { label: '正常',       max: 2,  color: '#00c896' },
+          { label: '系统性担忧', max: 6,  color: '#f5a623' },
+          { label: '严重分化',   max: 15, color: '#ff4d6a' },
+        ],
+        signal: (v, _prev) => v >= -1 && v <= 2 ? ['bull','风险结构正常'] : v > 5 ? ['bear','系统性风险显著'] : v < -3 ? ['bear','个股风险冲击'] : ['neutral','轻微分化'],
+        fetch: fetchVixSpread(),
+        link: 'https://finance.yahoo.com/quote/%5EVIX', linkLabel: 'Yahoo Finance',
+        info: {
+          title: 'VIX-VIXEQ 差值（市场分化度）',
+          desc: 'VIX(指数期权波动率)与VIXEQ(权益期权波动率)的差值，反映市场对系统性风险与个股层面风险的定价分化。正值表示系统性风险定价高于个股风险，负值表示个股风险超过系统性风险，往往预示市场内部结构出现分化。',
+          zones: [
+            { label: '< -3 个股风险高', color: '#ff4d6a', hint: '个股层面风险超过系统性风险，市场内部分化加剧' },
+            { label: '-3 ~ -1 短期偏高', color: '#ff7a45', hint: '个股风险略高于系统性风险' },
+            { label: '-1 ~ 2 正常', color: '#00c896', hint: '系统性风险与个股风险定价一致' },
+            { label: '2 ~ 6 系统性担忧', color: '#f5a623', hint: '系统性风险溢价上升，市场担忧宏观冲击' },
+            { label: '> 6 严重分化', color: '#ff4d6a', hint: '系统性风险远超个股风险，可能面临重大宏观事件' },
+          ]
+        }
+      },
+      {
+        id: 'putcall', name: 'CBOE 看跌/看涨比率', unit: '', tag: 'CBOE',
+        refLine: 1.0,
+        range: { min: 0.4, max: 1.6 },
+        zones: [
+          { label: '极乐观', max: 0.55, color: '#ff4d6a' },
+          { label: '偏乐观', max: 0.75, color: '#ff7a45' },
+          { label: '中性',   max: 1.0,  color: '#f5a623' },
+          { label: '偏悲观', max: 1.2,  color: '#4d9fff' },
+          { label: '极悲观', max: 1.6,  color: '#00c896' },
+        ],
+        signal: (v, _prev) => v >= 1.0 ? ['bull','看跌偏多，反向利好'] : v <= 0.6 ? ['bear','过度乐观，警惕回调'] : ['neutral','情绪中性'],
+        fetch: fetchCBOEPCR(),
+        link: 'https://www.cboe.com/us/options/market_statistics/daily/', linkLabel: 'CBOE',
+        info: {
+          title: 'CBOE 看跌/看涨比率 (Put/Call Ratio)',
+          desc: 'CBOE交易所看跌期权与看涨期权成交量之比。是经典的市场情绪反向指标：比率极高时市场过度悲观（买入信号），比率极低时市场过度乐观（卖出信号）。与VIX互补——VIX量波动率绝对水平，PCR量方向性押注。',
+          zones: [
+            { label: '< 0.55 极乐观', color: '#ff4d6a', hint: '市场过度乐观，往往是顶部信号' },
+            { label: '0.55-0.75 偏乐观', color: '#ff7a45', hint: '市场偏乐观，需保持谨慎' },
+            { label: '0.75-1.0 中性', color: '#f5a623', hint: '情绪均衡，无极端信号' },
+            { label: '1.0-1.2 偏悲观', color: '#4d9fff', hint: '市场偏悲观，可关注买入机会' },
+            { label: '> 1.2 极悲观', color: '#00c896', hint: '市场极度悲观，往往是底部信号' },
+          ]
+        }
+      },
+      {
+        id: 'ashare_breadth', name: 'A股上涨家数占比', unit: '%', tag: '东方财富',
+        range: { min: 0, max: 100 },
+        zones: [
+          { label: '极冷', max: 15, color: '#00c896' },
+          { label: '偏冷', max: 35, color: '#4d9fff' },
+          { label: '均衡', max: 65, color: '#f5a623' },
+          { label: '偏热', max: 85, color: '#ff7a45' },
+          { label: '极热', max: 100, color: '#ff4d6a' },
+        ],
+        signal: (v, _prev) => v <= 20 ? ['bull','极冷关注反转'] : v <= 40 ? ['bull','偏冷逐步关注'] : v >= 80 ? ['bear','极热注意风险'] : ['neutral','市场均衡'],
+        fetch: fetchAShareBreadth(),
+        link: 'https://www.eastmoney.com/', linkLabel: '东方财富',
+        info: {
+          title: 'A股上涨家数占比',
+          desc: '沪深两市当日上涨股票数量占全部A股的比例，反映市场内部广度与赚钱效应。是判断市场真实强弱的重要指标，比单一指数更能反映整体市场温度。',
+          zones: [
+            { label: '0-15% 极冷', color: '#00c896', hint: '普跌行情，往往是逆向布局时机' },
+            { label: '15-35% 偏冷', color: '#4d9fff', hint: '多数股票下跌，市场偏弱' },
+            { label: '35-65% 均衡', color: '#f5a623', hint: '涨跌各半，市场中性' },
+            { label: '65-85% 偏热', color: '#ff7a45', hint: '多数股票上涨，赚钱效应好' },
+            { label: '85-100% 极热', color: '#ff4d6a', hint: '普涨行情，需警惕短期过热' },
+          ]
+        }
+      },
+    ]
+  }
+};
+
+// ─── Fetch helpers (return lazy thunks so config is declarative) ─────────────
+function fetchFRED(seriesId) {
+  return async () => {
+    const url = `https://fred.stlouisfed.org/graph/fredgraph.csv?id=${seriesId}`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const text = await r.text();
+    return parseFREDcsv(text, null);
+  };
+}
+function fetchFRED_YoY(seriesId) {
+  return async () => {
+    const url = `https://fred.stlouisfed.org/graph/fredgraph.csv?id=${seriesId}`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const text = await r.text();
+    return parseFREDcsv(text, 'yoy');
+  };
+}
+function fetchFRED_Trillions(seriesId) {
+  return async () => {
+    const url = `https://fred.stlouisfed.org/graph/fredgraph.csv?id=${seriesId}`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const text = await r.text();
+    return parseFREDcsv(text, 'trillions');
+  };
+}
+function fetchYahoo(symbol) {
+  return async () => {
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=3mo`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const data = await r.json();
+    const result = data?.chart?.result?.[0];
+    if (!result) throw new Error('no result');
+    const closes = result.indicators?.quote?.[0]?.close?.filter(v => v != null) || [];
+    if (!closes.length) throw new Error('no close data');
+    const latest = closes[closes.length - 1];
+    const prev   = closes[closes.length - 2] ?? null;
+    const ts = result.meta?.regularMarketTime ?? result.timestamp?.[result.timestamp.length - 1];
+    const date = ts ? new Date(ts * 1000).toLocaleDateString('zh-CN') : null;
+    return { value: latest, prev, history: closes.slice(-60), date };
+  };
+}
+function fetchFearGreed() {
+  return async () => {
+    const url = 'https://production.dataviz.cnn.io/index/fearandgreed/graphdata';
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const data = await r.json();
+    const fg = data?.fear_and_greed;
+    if (!fg) throw new Error('no data');
+    return {
+      value: parseFloat(fg.score),
+      prev:  parseFloat(fg.previous_close ?? fg.score),
+      date: fg.data_timestamp ? new Date(fg.data_timestamp).toLocaleDateString('zh-CN') : null,
+    };
+  };
+}
+function fetchCBOEPCR() {
+  return async () => {
+    const url = 'https://www.cboe.com/us/options/market_statistics/daily/';
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const html = await r.text();
+    const match = html.match(/TOTAL\s+PUT\/CALL\s+RATIO[\s\S]*?<td[^>]*>\s*([\d.]+)\s*<\/td>/i)
+               || html.match(/TOTAL\s+PUT\/CALL\s+RATIO[\s\S]*?(\d+\.\d+)/i);
+    if (!match) throw new Error('PCR not found in page');
+    const value = parseFloat(match[1]);
+    if (isNaN(value)) throw new Error('Invalid PCR value');
+    // 尝试从页面提取日期
+    const dateMatch = html.match(/(\d{1,2}\/\d{1,2}\/\d{4})/);
+    const date = dateMatch ? dateMatch[1].replace(/(\d{1,2})\/(\d{1,2})\/(\d{4})/, (_, m, d, y) => `${y}/${parseInt(m)}/${parseInt(d)}`) : null;
+    return { value, prev: null, date };
+  };
+}
+
+function fetchChinaPMI() {
+  return async () => {
+    const url = 'https://datacenter-web.eastmoney.com/api/data/v1/get?sortColumns=REPORT_DATE&sortTypes=-1&pageSize=15&pageNumber=1&reportName=RPT_ECONOMY_PMI&columns=ALL';
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const data = await r.json();
+    const items = data?.result?.data;
+    if (!items || items.length < 2) throw new Error('no PMI data');
+    const value = items[0].MAKE_INDEX;
+    const prev = items[1].MAKE_INDEX ?? null;
+    const history = items.slice().reverse().map(d => d.MAKE_INDEX);
+    const date = items[0].REPORT_DATE ? items[0].REPORT_DATE.slice(0, 10).replace(/(\d{4})-(\d{2})-(\d{2})/, (_, y, m, d) => `${y}/${parseInt(m)}/${parseInt(d)}`) : null;
+    if (value == null) throw new Error('PMI value null');
+    return { value, prev, history, date };
+  };
+}
+
+function fetchShibor() {
+  return async () => {
+    const url = 'https://www.chinamoney.com.cn/r/cms/www/chinamoney/data/shibor/shibor.json?t=' + Date.now();
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const data = await r.json();
+    const records = data?.records;
+    if (!records || !records.length) throw new Error('no SHIBOR data');
+    const item3m = records.find(r => r.termCode === '3M');
+    if (!item3m) throw new Error('3M not found');
+    const value = parseFloat(item3m.shibor);
+    if (isNaN(value)) throw new Error('invalid SHIBOR value');
+    const bp = parseFloat(item3m.shibIdUpDown);
+    const prev = !isNaN(bp) ? value - bp / 100 : null;
+    const date = data?.data?.showDateCN ? data.data.showDateCN.slice(0, 10).replace(/(\d{4})-(\d{2})-(\d{2})/, (_, y, m, d) => `${y}/${parseInt(m)}/${parseInt(d)}`) : null;
+    return { value, prev, history: null, date };
+  };
+}
+
+function fetchLPR() {
+  return async () => {
+    // 当前值：从 JSON API 获取
+    const url = 'https://www.chinamoney.com.cn/r/cms/www/chinamoney/data/currency/bk-lpr.json?t=' + Date.now();
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const data = await r.json();
+    const records = data?.records;
+    if (!records || !records.length) throw new Error('no LPR data');
+    const item1y = records.find(r => r.termCode === '1Y');
+    if (!item1y) throw new Error('1Y LPR not found');
+    const value = parseFloat(item1y.shibor);
+    if (isNaN(value)) throw new Error('invalid LPR value');
+    const date = data?.data?.showDateCN ? data.data.showDateCN.slice(0, 10).replace(/(\d{4})-(\d{2})-(\d{2})/, (_, y, m, d) => `${y}/${parseInt(m)}/${parseInt(d)}`) : null;
+
+    // 历史数据：从 CSV API 获取
+    let history = null;
+    let prev = null;
+    try {
+      const csvUrl = 'https://www.chinamoney.com.cn/ags/ms/cm-u-bk-currency/LprChrtCSV?startDate=2019-01-01';
+      const cr = await fetch(csvUrl);
+      if (cr.ok) {
+        const csvData = await cr.json();
+        const csv = csvData?.data?.csv;
+        if (csv) {
+          const lines = csv.trim().split('\n').filter(l => l.trim());
+          const lpr1y = [];
+          for (const line of lines) {
+            const parts = line.split(',');
+            const v = parseFloat(parts[6]); // 第7列是1Y LPR
+            if (!isNaN(v)) lpr1y.push(v);
+          }
+          if (lpr1y.length >= 2) {
+            history = lpr1y.reverse(); // CSV从新到旧，反转为时间正序
+            prev = lpr1y[1]; // 前一期
+          } else if (lpr1y.length === 1) {
+            history = lpr1y;
+          }
+        }
+      }
+    } catch(e) { /* 历史数据获取失败不影响当前值显示 */ }
+
+    return { value, prev, history, date };
+  };
+}
+
+function fetchSP500PE() {
+  return async () => {
+    // 并行获取当前值和历史表格
+    const [pageR, tableR] = await Promise.allSettled([
+      fetch('https://www.multpl.com/s-p-500-pe-ratio'),
+      fetch('https://www.multpl.com/s-p-500-pe-ratio/table/by-month')
+    ]);
+
+    // 解析当前值
+    if (pageR.status === 'rejected') throw new Error('PE page fetch failed');
+    const html = await pageR.value.text();
+    const peMatch = html.match(/Current\s*S(?:&amp;|&)\s*P\s*500\s*PE\s*Ratio[:\s]*([\d.]+)/i)
+                   || html.match(/Current.*?S&P.*?PE.*?([\d.]{2,})/i)
+                   || html.match(/Current.*?PE Ratio.*?([\d.]{2,})/i);
+    if (!peMatch) throw new Error('PE not found');
+    const value = parseFloat(peMatch[1]);
+    if (isNaN(value)) throw new Error('Invalid PE value');
+
+    // 解析日期
+    const dateMatch = html.match(/(\w+)\s+(\d+),\s+(\d{4})/);
+    const date = dateMatch ? dateMatch[3] + '/' + {Jan:'1',Feb:'2',Mar:'3',Apr:'4',May:'5',Jun:'6',Jul:'7',Aug:'8',Sep:'9',Oct:'10',Nov:'11',Dec:'12'}[dateMatch[1]] + '/' + dateMatch[2] : null;
+
+    // 解析历史表格
+    let history = null;
+    let prev = null;
+    if (tableR.status === 'fulfilled') {
+      try {
+        const tableHtml = await tableR.value.text();
+        // 先去除HTML标签和实体，得到纯文本，再匹配日期+数值对
+        const plain = tableHtml.replace(/<[^>]+>/g, ' ').replace(/&dagger;|&amp;|†/gi, ' ').replace(/\s+/g, ' ');
+        const rows = [...plain.matchAll(/(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2},\s+\d{4}\s+([\d.]+)/gi)];
+        if (rows.length >= 2) {
+          const peValues = rows.slice(0, 60).map(m => parseFloat(m[1])).filter(v => !isNaN(v)).reverse();
+          if (peValues.length >= 2) {
+            history = peValues;
+            prev = peValues[peValues.length - 2];
+          }
+        }
+      } catch(e) { /* 历史解析失败不影响当前值 */ }
+    }
+
+    return { value, prev, history, date };
+  };
+}
+
+function fetchCSIndexPrice(indexCode) {
+  return async () => {
+    const end = new Date();
+    const start = new Date(end.getTime() - 90 * 24 * 3600 * 1000);
+    const fmt = d => `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+    const url = `https://www.csindex.com.cn/csindex-home/perf/index-perf?indexCode=${indexCode}&startDate=${fmt(start)}&endDate=${fmt(end)}`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const data = await r.json();
+    if (data?.code !== '200' || !data?.data?.length) throw new Error('no price data');
+    const items = data.data;
+    const value = items[items.length - 1].close;
+    const prev = items.length >= 2 ? items[items.length - 2].close : null;
+    const history = items.map(d => d.close).slice(-60);
+    const rawDate = items[items.length - 1].tradeDate;
+    const date = rawDate ? `${rawDate.slice(0,4)}/${parseInt(rawDate.slice(4,6))}/${parseInt(rawDate.slice(6,8))}` : null;
+    return { value, prev, history, date };
+  };
+}
+
+function fetchIndexPE(indexCode) {
+  return async () => {
+    const end = new Date();
+    const start = new Date(end.getTime() - 5 * 365 * 24 * 3600 * 1000);
+    const fmt = d => `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+    const url = `https://www.csindex.com.cn/csindex-home/perf/indexCsiDsPe?indexCode=${indexCode}&startDate=${fmt(start)}&endDate=${fmt(end)}`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const data = await r.json();
+    if (data?.code !== '200' || !data?.data?.length) throw new Error('no PE data');
+    const items = data.data;
+    const value = items[items.length - 1].peg;
+    const prev = items.length >= 2 ? items[items.length - 2].peg : null;
+    const history = items.map(d => d.peg).slice(-60);
+    const rawDate = items[items.length - 1].tradeDate;
+    const date = rawDate ? `${rawDate.slice(0,4)}/${parseInt(rawDate.slice(4,6))}/${parseInt(rawDate.slice(6,8))}` : null;
+    return { value, prev, history, date };
+  };
+}
+
+function fetchLLMTokenUsage() {
+  return async () => {
+    const API_KEY = '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';
+    const r = await fetch('https://openrouter.ai/api/v1/datasets/rankings-daily', {
+      headers: { 'Authorization': `Bearer ${API_KEY}` }
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const json = await r.json();
+    if (!json?.data?.length) throw new Error('no data');
+    // 按日期汇总全部token使用量（top50 + other）
+    const dailyMap = {};
+    for (const item of json.data) {
+      const tokens = parseInt(item.total_tokens) || 0;
+      dailyMap[item.date] = (dailyMap[item.date] || 0) + tokens;
+    }
+    // 按周汇总（ISO周一起算）
+    const weekMap = {};
+    const weekDayCount = {};
+    for (const [dateStr, tokens] of Object.entries(dailyMap)) {
+      const d = new Date(dateStr + 'T00:00:00Z');
+      const dayOfWeek = d.getUTCDay(); // 0=Sun
+      const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+      const monday = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + mondayOffset));
+      const weekKey = monday.toISOString().slice(0, 10);
+      weekMap[weekKey] = (weekMap[weekKey] || 0) + tokens;
+      weekDayCount[weekKey] = (weekDayCount[weekKey] || 0) + 1;
+    }
+    const weeks = Object.keys(weekMap).sort();
+    // 排除未完成的一周（天数不足7天 = 本周尚未结束）
+    const completeWeeks = weeks.filter(w => weekDayCount[w] >= 7);
+    const weeklyTotals = completeWeeks.map(w => +(weekMap[w] / 1e12).toFixed(1)); // 转万亿(T)
+    const value = weeklyTotals[weeklyTotals.length - 1];
+    const prev = weeklyTotals.length >= 2 ? weeklyTotals[weeklyTotals.length - 2] : null;
+    const history = weeklyTotals;
+    const date = completeWeeks[completeWeeks.length - 1]?.replace(/-/g, '/');
+    return { value, prev, history, date };
+  };
+}
+
+function fetchAShareBreadth() {
+  return async () => {
+    const url = 'https://push2.eastmoney.com/api/qt/ulist.np/get?fltt=2&fields=f104,f105,f106&secids=1.000001,0.399001';
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const data = await r.json();
+    const items = data?.data?.diff;
+    if (!items || items.length < 2) throw new Error('no data');
+    let adv = 0, dec = 0, flat = 0;
+    for (const item of items) {
+      adv  += (item.f104 || 0);
+      dec  += (item.f105 || 0);
+      flat += (item.f106 || 0);
+    }
+    const total = adv + dec + flat;
+    if (total === 0) throw new Error('no stock data');
+    const ratio = (adv / total) * 100;
+    const date = new Date().toLocaleDateString('zh-CN');
+    return { value: ratio, prev: null, date };
+  };
+}
+function fetchFRED_WeeklyYoY(seriesId) {
+  return async () => {
+    const url = `https://fred.stlouisfed.org/graph/fredgraph.csv?id=${seriesId}`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const text = await r.text();
+    const lines = text.trim().split('\n');
+    const rows = lines.slice(1)
+      .map(l => { const [d, v] = l.split(','); return { d, v: parseFloat(v) }; })
+      .filter(r => !isNaN(r.v));
+    if (!rows.length) throw new Error('empty CSV');
+    const yoy = (curr, ago) => (curr - ago) / Math.abs(ago) * 100;
+    const lookback = Math.min(rows.length, 120);
+    const tail = rows.slice(-lookback);
+    if (tail.length < 53) throw new Error('insufficient data');
+    const history = tail.slice(52).map((r, i) => yoy(r.v, tail[i].v));
+    const latest = history[history.length - 1];
+    const prev = history[history.length - 2] ?? null;
+    const rawDate = rows[rows.length - 1]?.d ?? null;
+    const date = rawDate ? rawDate.replace(/(\d{4})-(\d{2})-(\d{2})/, (_, y, m, d) => `${y}/${parseInt(m)}/${parseInt(d)}`) : null;
+    return { value: latest, prev, history: history.slice(-60), date };
+  };
+}
+
+function fetchVixSpread() {
+  return async () => {
+    const [vixData, vixeqData] = await Promise.allSettled([
+      fetchYahoo('^VIX')(),
+      fetchYahoo('^VIXEQ')()
+    ]);
+    const vix = vixData.status === 'fulfilled' ? vixData.value.value : null;
+    const vixeq = vixeqData.status === 'fulfilled' ? vixeqData.value.value : null;
+    if (vix == null || vixeq == null) throw new Error('VIX data unavailable');
+    const spread = vix - vixeq;
+    const date = vixData.status === 'fulfilled' ? vixData.value.date : null;
+    return { value: spread, prev: null, date };
+  };
+}
+function fetchYieldCurve() {
+  return async () => {
+    const [tnxData, irxData] = await Promise.allSettled([
+      fetchYahoo('^TNX')(),
+      fetchYahoo('^IRX')()
+    ]);
+    const tnx = tnxData.status === 'fulfilled' ? tnxData.value.value : null;
+    const irx = irxData.status === 'fulfilled' ? irxData.value.value : null;
+    if (tnx == null || irx == null) throw new Error('Yield data unavailable');
+    const spread = tnx - irx;
+    const prevTnx = tnxData.value?.prev;
+    const prevIrx = irxData.value?.prev;
+    const prevSpread = (prevTnx != null && prevIrx != null) ? prevTnx - prevIrx : null;
+    const date = tnxData.status === 'fulfilled' ? tnxData.value.date : null;
+    return { value: spread, prev: prevSpread, history: null, date };
+  };
+}
+
+function parseFREDcsv(text, transform) {
+  const lines = text.trim().split('\n');
+  const rows = lines.slice(1)
+    .map(l => { const [d, v] = l.split(','); return { d, v: parseFloat(v) }; })
+    .filter(r => !isNaN(r.v));
+  if (!rows.length) throw new Error('empty CSV');
+
+  let history = rows.map(r => r.v);
+  let latest = rows[rows.length - 1].v;
+  let prev   = rows[rows.length - 2]?.v ?? null;
+
+  if (transform === 'yoy') {
+    const tail = rows.slice(-14);
+    if (tail.length >= 13) {
+      const yoy = (curr, ago) => (curr - ago) / Math.abs(ago) * 100;
+      history = tail.slice(1).map((r, i) => yoy(r.v, tail[i].v));
+      latest  = history[history.length - 1];
+      prev    = history[history.length - 2] ?? null;
+    }
+  } else if (transform === 'trillions') {
+    history = history.map(v => v / 1e6);
+    latest  = latest / 1e6;
+    if (prev != null) prev = prev / 1e6;
+  }
+  const rawDate = rows[rows.length - 1].d;
+  const date = rawDate ? rawDate.replace(/(\d{4})-(\d{2})-(\d{2})/, (_, y, m, d) => `${y}/${parseInt(m)}/${parseInt(d)}`) : null;
+  return { value: latest, prev, history: history.slice(-60), date };
+}
+
+// ─── Rendering ────────────────────────────────────────────────────────────────
+function pct(ind, v) {
+  return Math.max(0, Math.min(100, (v - ind.range.min) / (ind.range.max - ind.range.min) * 100));
+}
+function calcPercentile(history, value) {
+  if (!history || history.length < 10 || value == null) return null;
+  const below = history.filter(v => v < value).length;
+  const equal = history.filter(v => v === value).length;
+  // 使用 (below + 0.5 * equal) / total 的标准百分位计算
+  return Math.round((below + 0.5 * equal) / history.length * 100);
+}
+function getZone(ind, v) {
+  for (const z of ind.zones) if (v <= z.max) return z;
+  return ind.zones[ind.zones.length - 1];
+}
+function fmt(v, ind) {
+  if (v == null) return '—';
+  const abs = Math.abs(v);
+  if (ind.unit === '$' && abs >= 10000) return v.toLocaleString('en-US', { maximumFractionDigits: 0 });
+  if (abs >= 1000) return v.toLocaleString('en-US', { maximumFractionDigits: 0 });
+  if (abs < 10)    return v.toFixed(2);
+  return v.toFixed(1);
+}
+
+function buildInfoHtml(ind) {
+  if (!ind.info) return '';
+  const info = ind.info;
+  let zoneItems = '';
+  if (info.zones) {
+    zoneItems = '<div class="zone-list">';
+    for (const z of info.zones) {
+      zoneItems += `<div class="zone-item"><span class="zone-dot" style="background:${z.color}"></span><span>${z.label}：${z.hint}</span></div>`;
+    }
+    zoneItems += '</div>';
+  }
+  return `<span class="info-icon">?<span class="info-tip"><strong>${info.title}</strong>${info.desc}${zoneItems}</span></span>`;
+}
+
+function buildCard(ind) {
+  const div = document.createElement('div');
+  div.className = 'icard';
+  div.id = 'card-' + ind.id;
+  div.innerHTML = `
+    <div class="icard-top">
+      <span class="icard-name-wrap"><span class="icard-name">${ind.name}</span>${buildInfoHtml(ind)}</span>
+      <span class="icard-tag">${ind.tag}</span>
+    </div>
+    <div class="skel" style="height:26px;width:110px;margin-bottom:13px;"></div>
+    <div class="skel" style="height:4px;width:100%;margin-bottom:10px;"></div>
+    <div class="skel" style="height:11px;width:70%;"></div>`;
+  return div;
+}
+
+function renderCard(ind, data) {
+  const el = document.getElementById('card-' + ind.id);
+  if (!el) return;
+  if (data.error) {
+    el.innerHTML = `
+      <div class="icard-top"><span class="icard-name-wrap"><span class="icard-name">${ind.name}</span>${buildInfoHtml(ind)}</span><span class="icard-tag">${ind.tag}</span></div>
+      <div class="icard-val-row"><span class="icard-val" style="font-size:18px;opacity:0.4">获取失败</span></div>
+      <div class="err-label" style="margin-bottom:10px">${data.error}</div>
+      <div class="icard-footer">
+        <span></span>
+        <a class="detail-link" href="${ind.link}" target="_blank">${ind.linkLabel} ↗</a>
+      </div>`;
+    return;
+  }
+  const { value, prev, history, date } = data;
+  const p = pct(ind, value);
+  const zone = getZone(ind, value);
+  const [sigType, sigLabel] = ind.signal(value, prev);
+  const percentile = calcPercentile(history, value);
+  const dateHtml = date ? `<span class="icard-date">${date}</span>` : '';
+
+  // change
+  let chgHtml = '';
+  if (prev != null) {
+    const d = value - prev;
+    const sign = d >= 0 ? '+' : '';
+    const abs = Math.abs(d);
+    const txt = abs < 0.005 ? '±0' : sign + (abs < 1 ? d.toFixed(2) : (d / Math.abs(prev) * 100).toFixed(1) + '%');
+    const cls = d > 0.001 ? 'chg-up' : d < -0.001 ? 'chg-down' : 'chg-flat';
+    chgHtml = `<span class="icard-chg ${cls}">${txt}</span>`;
+  }
+
+  // percentile
+  let pctHtml = '';
+  if (percentile != null) {
+    const pctColor = percentile >= 80 ? 'var(--red)' : percentile >= 60 ? 'var(--amber)' : percentile <= 20 ? 'var(--green)' : percentile <= 40 ? 'var(--blue)' : 'var(--text3)';
+    pctHtml = `<span class="percentile-badge" style="color:${pctColor}">P${percentile}</span>`;
+  }
+
+  const sigCls = sigType === 'bull' ? 'sig-bull' : sigType === 'bear' ? 'sig-bear' : 'sig-neutral';
+
+  // ── Gauge mode (fear & greed) - vertical arrow-up ──
+  if (ind.gauge) {
+    const gaugeSvg = buildGaugeSvg(ind, value, zone);
+    el.innerHTML = `
+      <div class="icard-top">
+        <span class="icard-name-wrap"><span class="icard-name">${ind.name}</span>${buildInfoHtml(ind)}</span>
+        <span class="icard-tag">${ind.tag}</span>${dateHtml}
+      </div>
+      <div class="gauge-wrap">${gaugeSvg}</div>
+      <div class="icard-footer">
+        <span class="signal-badge ${sigCls}"><span class="sig-dot"></span>${sigLabel}</span>
+        <a class="detail-link" href="${ind.link}" target="_blank">${ind.linkLabel} ↗</a>
+      </div>`;
+    return;
+  }
+
+  // ── Standard card ──
+  let segs = '', cursor = p;
+  let left = ind.range.min;
+  for (const z of ind.zones) {
+    const l = pct(ind, left);
+    const r = pct(ind, z.max);
+    segs += `<div class="zbar-zone" style="left:${l}%;width:${r-l}%;background:${z.color}"></div>`;
+    left = z.max;
+  }
+
+  const hasHistory = history && history.length > 5;
+
+  el.innerHTML = `
+    <div class="icard-top">
+      <span class="icard-name-wrap"><span class="icard-name">${ind.name}</span>${buildInfoHtml(ind)}</span>
+      <span class="icard-tag">${ind.tag}</span>${dateHtml}
+    </div>
+    <div class="icard-val-row">
+      <span class="icard-val">${fmt(value, ind)}</span>
+      ${ind.unit ? `<span class="icard-unit">${ind.unit}</span>` : ''}
+      ${pctHtml}
+      ${chgHtml}
+    </div>
+    <div>
+      <div class="zbar-labels">
+        <span class="zbar-label">${ind.zones[0].label}</span>
+        <span class="zbar-label" style="color:${zone.color}">${zone.label}</span>
+        <span class="zbar-label">${ind.zones[ind.zones.length-1].label}</span>
+      </div>
+      <div class="zbar-track">
+        ${segs}
+        <div class="zbar-cursor" style="left:${cursor}%;background:${zone.color};color:${zone.color}"></div>
+      </div>
+    </div>
+    ${hasHistory ? `<div class="mini-chart"><canvas id="tc-${ind.id}"></canvas></div>` : ''}
+    <div class="icard-footer">
+      <span class="signal-badge ${sigCls}"><span class="sig-dot"></span>${sigLabel}</span>
+      <a class="detail-link" href="${ind.link}" target="_blank">${ind.linkLabel} ↗</a>
+    </div>`;
+
+  if (hasHistory) {
+    requestAnimationFrame(() => {
+      const canvas = document.getElementById('tc-' + ind.id);
+      if (canvas) { canvas._chartData = history; canvas._chartColor = zone.color; canvas._chartRefLine = ind.refLine; }
+      drawChart(canvas, history, zone.color, ind.refLine);
+    });
+  }
+}
+
+function buildGaugeSvg(ind, value, zone) {
+  // Vertical gauge: arrow pointing up, 0 at bottom, 100 at top
+  const W = 260, H = 140;
+  const barX = 30, barW = 16;
+  const barTop = 12, barBottom = H - 20;
+  const barH = barBottom - barTop;
+
+  // Background bar
+  const bgBar = `<rect x="${barX}" y="${barTop}" width="${barW}" height="${barH}" rx="8" fill="var(--fill3)"/>`;
+
+  // Colored zone segments (vertical, bottom to top)
+  let zoneSegs = '';
+  let left = ind.range.min;
+  for (const z of ind.zones) {
+    const lPct = pct(ind, left);
+    const rPct = pct(ind, z.max);
+    const y1 = barBottom - (rPct / 100) * barH;
+    const y2 = barBottom - (lPct / 100) * barH;
+    const isActive = value > left && value <= z.max;
+    const opacity = isActive ? '0.85' : '0.2';
+    zoneSegs += `<rect x="${barX}" y="${y1}" width="${barW}" height="${y2 - y1}" rx="0" fill="${z.color}" opacity="${opacity}"/>`;
+    left = z.max;
+  }
+  // Round top and bottom of the combined bar
+  zoneSegs += `<rect x="${barX}" y="${barTop}" width="${barW}" height="${barH}" rx="8" fill="none" stroke="var(--border2)" stroke-width="1"/>`;
+
+  // Needle position
+  const valPct = pct(ind, value);
+  const needleY = barBottom - (valPct / 100) * barH;
+
+  // Arrow pointer (right side of bar, pointing left)
+  const arrowX = barX + barW + 4;
+  const arrowTipX = arrowX + 2;
+  const arrowBackX = arrowX + 14;
+  const arrowHtml = `<polygon points="${arrowTipX},${needleY} ${arrowBackX},${needleY - 7} ${arrowBackX},${needleY + 7}" fill="${zone.color}"/>`;
+
+  // Glow at needle position
+  const glowHtml = `<circle cx="${barX + barW / 2}" cy="${needleY}" r="12" fill="${zone.color}" opacity="0.12"/>`;
+
+  // Tick marks on left side
+  let ticks = '';
+  for (let i = 0; i <= 10; i++) {
+    const y = barBottom - (i / 10) * barH;
+    const isMajor = i % 5 === 0;
+    const x1 = barX - (isMajor ? 8 : 4);
+    const x2 = barX - 1;
+    ticks += `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="var(--text3)" stroke-width="${isMajor ? 1.2 : 0.5}" opacity="${isMajor ? 0.5 : 0.25}"/>`;
+  }
+
+  // Zone labels on the right
+  let zoneLabels = '';
+  left = ind.range.min;
+  for (const z of ind.zones) {
+    const lPct = pct(ind, left);
+    const rPct = pct(ind, z.max);
+    const midPct = (lPct + rPct) / 2;
+    const midY = barBottom - (midPct / 100) * barH;
+    const isActive = value > left && value <= z.max;
+    zoneLabels += `<text x="${arrowBackX + 6}" y="${midY + 4}" font-family="var(--sans)" font-size="${isActive ? '10' : '9'}" fill="${isActive ? z.color : 'var(--text3)'}" opacity="${isActive ? '1' : '0.5'}">${z.label}</text>`;
+    left = z.max;
+  }
+
+  // Value text (large, right side)
+  const valText = `<text x="${W - 10}" y="${needleY + 4}" font-family="var(--mono)" font-size="22" font-weight="500" fill="${zone.color}" text-anchor="end">${Math.round(value)}</text>`;
+
+  // Min / max labels
+  const minLabel = `<text x="${barX + barW / 2}" y="${barBottom + 14}" font-family="var(--mono)" font-size="9" fill="var(--text3)" text-anchor="middle">${ind.range.min}</text>`;
+  const maxLabel = `<text x="${barX + barW / 2}" y="${barTop - 3}" font-family="var(--mono)" font-size="9" fill="var(--text3)" text-anchor="middle">${ind.range.max}</text>`;
+
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">${bgBar}${zoneSegs}${glowHtml}${ticks}${arrowHtml}${zoneLabels}${valText}${minLabel}${maxLabel}</svg>`;
+}
+
+function drawChart(canvas, data, color, refLine) {
+  if (!canvas) return;
+  const W = canvas.parentElement.clientWidth || 260, H = 36;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  const mn = Math.min(...data), mx = Math.max(...data), rng = mx - mn || 1;
+  const yOf = v => H - 4 - ((v - mn) / rng) * (H - 8);
+  const cs = getComputedStyle(document.documentElement);
+
+  // reference line
+  if (refLine != null && refLine >= mn && refLine <= mx) {
+    const ry = yOf(refLine);
+    ctx.beginPath();
+    ctx.setLineDash([3, 3]);
+    ctx.moveTo(0, ry);
+    ctx.lineTo(W, ry);
+    ctx.strokeStyle = cs.getPropertyValue('--fill4').trim();
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  const pts = data.map((v, i) => ({
+    x: (i / (data.length - 1)) * W,
+    y: yOf(v)
+  }));
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, pts[0].y);
+  for (let i = 1; i < pts.length; i++) {
+    const mx2 = (pts[i-1].x + pts[i].x) / 2;
+    const my2 = (pts[i-1].y + pts[i].y) / 2;
+    ctx.quadraticCurveTo(pts[i-1].x, pts[i-1].y, mx2, my2);
+  }
+  ctx.lineTo(pts[pts.length-1].x, pts[pts.length-1].y);
+  ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
+  ctx.fillStyle = color + '1a'; ctx.fill();
+}
+
+// ─── Signal aggregation ───────────────────────────────────────────────────────
+const layerSigs = {};
+const layerIndSigs = {};  // 存储每个指标的具体信号，用于跨层分析
+function updateSummary(layerId, sigType, indId) {
+  if (!layerSigs[layerId]) layerSigs[layerId] = [];
+  layerSigs[layerId].push(sigType);
+  if (!layerIndSigs[layerId]) layerIndSigs[layerId] = {};
+  layerIndSigs[layerId][indId] = sigType;
+  const sigs = layerSigs[layerId];
+  const bulls = sigs.filter(s => s === 'bull').length;
+  const bears = sigs.filter(s => s === 'bear').length;
+  const el = document.getElementById('sig-' + layerId);
+  if (!el) return;
+  if (bulls > bears && bulls > sigs.length / 3) { el.textContent = '偏多'; el.style.color = 'var(--green)'; }
+  else if (bears > bulls && bears > sigs.length / 3) { el.textContent = '偏空'; el.style.color = 'var(--red)'; }
+  else { el.textContent = '中性'; el.style.color = 'var(--amber)'; }
+}
+
+// ─── 跨层信号联动分析 ──────────────────────────────────────────────────────────
+function crossLayerAnalysis() {
+  const L = layerId => {
+    const sigs = layerSigs[layerId];
+    if (!sigs || !sigs.length) return 'neutral';
+    const bulls = sigs.filter(s => s === 'bull').length;
+    const bears = sigs.filter(s => s === 'bear').length;
+    if (bulls > bears && bulls > sigs.length / 3) return 'bull';
+    if (bears > bulls && bears > sigs.length / 3) return 'bear';
+    return 'neutral';
+  };
+  const ind = (layerId, indId) => layerIndSigs[layerId]?.[indId] ?? null;
+
+  const alerts = [];
+
+  // 规则1：宏观偏空 + 情绪极度恐惧 → 逆向买入机会
+  if (L('macro') === 'bear' && L('sentiment') === 'bear') {
+    alerts.push({ type: 'opportunity', label: '逆向买入机会', desc: '宏观偏空+情绪极度恐惧，历史上往往是中长期买入时点' });
+  }
+
+  // 规则2：流动性偏空 + 市场偏多 → 警惕流动性陷阱下的虚假繁荣
+  if (L('liquidity') === 'bear' && L('market') === 'bull') {
+    alerts.push({ type: 'warning', label: '警惕虚假繁荣', desc: '流动性收紧+市场上涨，可能缺乏资金面支撑' });
+  }
+
+  // 规则3：收益率曲线倒挂恢复 + 市场偏多 → 衰退临近，市场可能见顶
+  if (ind('macro', 't10y2y') === 'bear' && L('market') === 'bull') {
+    alerts.push({ type: 'danger', label: '衰退预警', desc: '收益率曲线信号偏空+市场仍强，历史上衰退前市场常创新高' });
+  }
+
+  // 规则4：宏观偏多 + 流动性偏多 + 市场偏空 → 可能是买入机会
+  if (L('macro') === 'bull' && L('liquidity') === 'bull' && L('market') === 'bear') {
+    alerts.push({ type: 'opportunity', label: '基本面背离', desc: '宏观与流动性均偏多但市场弱势，可能过度悲观' });
+  }
+
+  // 规则5：情绪偏多 + 流动性偏空 → 警惕情绪驱动的不可持续上涨
+  if (L('sentiment') === 'bull' && L('liquidity') === 'bear') {
+    alerts.push({ type: 'warning', label: '情绪过热风险', desc: '情绪贪婪+流动性收紧，上涨可能难以持续' });
+  }
+
+  // 规则6：VIX 极度恐慌 + 宏观中性/偏多 → 恐慌性抛售买入机会
+  if (ind('sentiment', 'vix') === 'bear' && (L('macro') === 'neutral' || L('macro') === 'bull')) {
+    alerts.push({ type: 'opportunity', label: '恐慌性错杀', desc: 'VIX恐慌但宏观不差，可能是情绪驱动的过度抛售' });
+  }
+
+  // 规则7：高收益债利差走宽 + 市场偏多 → 信用风险隐忧
+  if (ind('liquidity', 'hyspread') === 'bear' && L('market') === 'bull') {
+    alerts.push({ type: 'warning', label: '信用风险隐忧', desc: '高收益债利差走宽+市场仍强，信用市场预警不可忽视' });
+  }
+
+  // 规则8：全面偏多 → 顺势持有
+  const allBull = ['macro','liquidity','sentiment','market'].every(k => L(k) === 'bull');
+  if (allBull) {
+    alerts.push({ type: 'confirm', label: '全面共振偏多', desc: '宏观/流动性/情绪/市场四层偏多，顺趋势持有' });
+  }
+
+  // 规则9：全面偏空 → 防御为主
+  const allBear = ['macro','liquidity','sentiment','market'].every(k => L(k) === 'bear');
+  if (allBear) {
+    alerts.push({ type: 'danger', label: '全面共振偏空', desc: '四层信号偏空，建议防御为主，等待反转信号' });
+  }
+
+  // 渲染
+  const container = document.getElementById('cross-signal');
+  if (!container) return;
+  if (!alerts.length) {
+    container.innerHTML = '<span class="cross-empty">各层信号独立，暂无显著跨层联动</span>';
+    return;
+  }
+  container.innerHTML = alerts.map(a => {
+    const colors = {
+      opportunity: { bg: 'rgba(0,200,150,0.08)', border: 'rgba(0,200,150,0.25)', dot: 'var(--green)', icon: '↗' },
+      warning:     { bg: 'rgba(245,166,35,0.08)',  border: 'rgba(245,166,35,0.25)',  dot: 'var(--amber)', icon: '⚠' },
+      danger:      { bg: 'rgba(255,77,106,0.08)',   border: 'rgba(255,77,106,0.25)',  dot: 'var(--red)',   icon: '✕' },
+      confirm:     { bg: 'rgba(77,159,255,0.08)',   border: 'rgba(77,159,255,0.25)',  dot: 'var(--blue)',  icon: '✓' },
+    };
+    const c = colors[a.type] || colors.warning;
+    return `<div class="cross-alert" style="background:${c.bg};border-color:${c.border}">
+      <span class="cross-icon" style="color:${c.dot}">${c.icon}</span>
+      <span class="cross-label" style="color:${c.dot}">${a.label}</span>
+      <span class="cross-desc">${a.desc}</span>
+    </div>`;
+  }).join('');
+}
+
+// ─── Tab switching ────────────────────────────────────────────────────────────
+function switchLayer(id) {
+  document.querySelectorAll('.layer-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('layer-' + id)?.classList.add('active');
+  document.querySelector(`[data-layer="${id}"]`)?.classList.add('active');
+}
+
+// ─── Main load ────────────────────────────────────────────────────────────────
+async function loadAll() {
+  const btn = document.getElementById('refreshBtn');
+  btn.disabled = true; btn.textContent = '↻ 加载中…';
+  Object.keys(layerSigs).forEach(k => delete layerSigs[k]);
+  Object.keys(layerIndSigs).forEach(k => delete layerIndSigs[k]);
+  document.querySelectorAll('[id^="sig-"]').forEach(el => { el.textContent = '…'; el.style.color = 'var(--text3)'; });
+  document.getElementById('cross-signal').innerHTML = '<span class="cross-empty">加载中…</span>';
+
+  // Build skeleton cards
+  for (const [layerId, layer] of Object.entries(LAYERS)) {
+    const grid = document.getElementById('grid-' + layerId);
+    grid.innerHTML = '';
+    for (const ind of layer.indicators) grid.appendChild(buildCard(ind));
+  }
+
+  // Fetch all concurrently
+  const tasks = Object.entries(LAYERS).flatMap(([layerId, layer]) =>
+    layer.indicators.map(ind => ({ layerId, ind }))
+  );
+
+  await Promise.allSettled(tasks.map(async ({ layerId, ind }) => {
+    try {
+      const data = await ind.fetch();
+      renderCard(ind, data);
+      if (data.value != null) {
+        const [sigType] = ind.signal(data.value, data.prev);
+        updateSummary(layerId, sigType, ind.id);
+      }
+    } catch(e) {
+      renderCard(ind, { error: e.message });
+    }
+  }));
+
+  document.getElementById('updateTime').textContent =
+    new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  crossLayerAnalysis();
+  btn.disabled = false; btn.textContent = '↻ 刷新';
+}
+
+loadAll();
+
+// ─── Theme toggle ──────────────────────────────────────────────────────────
+function toggleTheme() {
+  const root = document.documentElement;
+  const isLight = root.getAttribute('data-theme') === 'light';
+  root.setAttribute('data-theme', isLight ? 'dark' : 'light');
+  document.getElementById('themeBtn').textContent = isLight ? '☀' : '☾';
+  localStorage.setItem('theme', isLight ? 'dark' : 'light');
+  // 重绘所有mini-chart（canvas颜色依赖CSS变量）
+  for (const layer of Object.values(LAYERS)) {
+    for (const ind of layer.indicators) {
+      const canvas = document.getElementById('tc-' + ind.id);
+      if (canvas) {
+        const data = canvas._chartData;
+        const color = canvas._chartColor;
+        const refLine = canvas._chartRefLine;
+        if (data) drawChart(canvas, data, color, refLine);
+      }
+    }
+  }
+}
+// 初始化主题
+(function() {
+  const saved = localStorage.getItem('theme');
+  if (saved === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+    document.getElementById('themeBtn').textContent = '☾';
+  }
+})();
+</script>
+</body>
+</html>
